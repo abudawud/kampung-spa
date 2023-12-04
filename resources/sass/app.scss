@@ -1,0 +1,22 @@
+// Fonts
+// @import url('https://fonts.bunny.net/css?family=Nunito');
+
+// Variables
+@import 'colors';
+
+// Bootstrap
+@import 'bootstrap';
+@import 'admin-lte';
+
+// disable this style when using dark sidebar!
+a.list-group-item > .search-title > strong.text-light {
+    color: $primary !important;
+}
+
+.content-header {
+    padding: 10px 0px;
+}
+
+.content-wrapper > .content {
+    padding: 0px;
+}
