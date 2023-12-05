@@ -20,6 +20,15 @@
 
 @section('auth_header', __('adminlte::adminlte.login_message'))
 
+@section('css')
+<style>
+.login-page {
+		background-image: url("{{ asset('assets/img/wb_login.jpg') }}");
+		background-size: cover !important;
+}
+</style>
+@stop
+
 @section('auth_body')
     <form action="{{ $login_url }}" method="post">
         @csrf
@@ -101,4 +110,5 @@
             </a>
         </p>
     @endif
+        {{ config("app.company_name") }}
 @stop

@@ -10,9 +10,9 @@ return [
     |  COMPANY CONST
     |-----------------
      */
-    'company_name' => 'PT. Sabin Solusi Sejahtera',
-    'company_address' => 'Jl. Rungkut Industri No 3',
-    'company_location' => 'Surabaya - Jawa Timur',
+    'company_name' => 'CV. Aromatherapy SPA Family',
+    'company_address' => 'Jember',
+    'company_location' => 'Jember - Jawa Timur',
 
     /*
     |--------------------------------------------------------------------------
@@ -173,6 +173,7 @@ return [
          * Application Service Providers...
          */
         App\Providers\AppServiceProvider::class,
+        App\Providers\FortifyServiceProvider::class,
         App\Providers\AuthServiceProvider::class,
         // App\Providers\BroadcastServiceProvider::class,
         App\Providers\EventServiceProvider::class,
