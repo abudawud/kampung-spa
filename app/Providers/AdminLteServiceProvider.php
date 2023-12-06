@@ -58,9 +58,8 @@ class AdminLteServiceProvider extends ServiceProvider
                 ->join(Module::getTableName('mo'), 'mo.id', '=', 'm.module_id')
                 ->leftJoin(Route::getTableName('r'), 'r.id', '=', 'm.route_id')
                 ->where([
-                    ['mo.url', request()->route()->getPrefix()],
                     ['m.is_active', true]
-                ])->where('m.role_id', auth()->user()->current_role_id)
+                ])->where('m.role_id', auth()->user()->roles->pluck('id'))
                 ->select([
                     'm.id', 'm.parent_id', 'm.text', 'r.url',
                     'r.active', 'm.icon', 'r.can', 'm.order', 'm.parent_id',

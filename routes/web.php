@@ -13,11 +13,10 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::get('/', function () {
-    return view('welcome');
-});
+Route::get('/', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
 
-Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
-
-Route::post('ms-barang.export', [App\Http\Controllers\MsBarangController::class, 'export'])->name('ms-barang.export');
-Route::resource('ms-barang', App\Http\Controllers\MsBarangController::class);
+Route::resource('site', App\Http\Controllers\SiteController::class);
+Route::resource('employee', App\Http\Controllers\EmployeeController::class);
+Route::resource('customer', App\Http\Controllers\CustomerController::class);
+Route::resource('item', App\Http\Controllers\ItemController::class);
+Route::resource('package', App\Http\Controllers\PackageController::class);

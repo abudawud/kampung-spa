@@ -1,0 +1,55 @@
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use AbuDawud\AlCrudLaravel\Models\BaseModel;
+
+/**
+ * @property-read int $id
+ */
+class Item extends BaseModel
+{
+    use HasFactory;
+
+    protected $table = "item";
+
+    public $fillable = [
+        'site_id',
+        'code',
+        'name',
+        'duration',
+        'image_path',
+        'normal_price',
+        'member_price',
+        'description',
+        'is_active',
+        'created_by'
+    ];
+
+    public $visible = [
+        'site_id',
+        'code',
+        'name',
+        'duration',
+        'normal_price',
+        'member_price',
+        'description',
+        'is_active',
+    ];
+
+    const VALIDATION_RULES = [
+        'site_id' => 'required',
+        'name' => 'required',
+        'duration' => 'required|integer|gte:0',
+        'image_path' => 'nullable',
+        'normal_price' => 'required|integer|gte:0',
+        'member_price' => 'required|integer|gte:0',
+        'description' => 'nullable',
+        'is_active' => 'nullable',
+    ];
+
+    const VALIDATION_MESSAGES = [
+
+    ];
+}
