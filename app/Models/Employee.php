@@ -42,7 +42,10 @@ class Employee extends BaseModel
         'weight',
         'hire_at',
         'address',
-        'is_active'
+        'is_active',
+
+        'position', 'site', 'sex',
+
     ];
 
     const VALIDATION_RULES = [
@@ -60,4 +63,16 @@ class Employee extends BaseModel
     ];
 
     const VALIDATION_MESSAGES = [];
+
+    public function site() {
+        return $this->belongsTo(Site::class, 'site_id');
+    }
+
+    public function position() {
+        return $this->belongsTo(Position::class, 'position_id');
+    }
+
+    public function sex() {
+        return $this->belongsTo(Reference::class, 'sex_id');
+    }
 }

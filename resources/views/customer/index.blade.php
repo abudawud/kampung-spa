@@ -27,7 +27,7 @@
                                 <a id="btn-create" href="{{ route('customer.create') }}" class="btn btn-primary modal-remote"> <span
                                         class="fas fa-plus"></span></a>
                             @endcan
-                            
+
                             <a id="btn-reset" class="btn btn-default"> <span class="fas fa-sync"></span></a>
                         </div>
                     </div>
@@ -97,7 +97,7 @@
               pageLength: 25,
               colReorder: true,
               order: [[0, 'desc']],
-              columns: [{"data":"id"},{"data":"site_id"},{"data":"code"},{"data":"name"},{"data":"instagram"},{"data":"birth_date"},{"data":"no_hp"},{"data":"address"},{"data":"is_member"},{"data":"actions"}],
+              columns: [{"data":"id"},{"data":"site.city_name"},{"data":"code"},{"data":"name"},{"data":"instagram"},{"data":"birth_date"},{"data":"no_hp"},{"data":"address"},{"data":"is_member"},{"data":"actions"}],
               columnDefs: [
                 {targets: -1, searchable: false, orderable: false, class: "text-center"},
                 {targets: 0, searchable: false},
@@ -124,7 +124,7 @@
                     });
             });
 
-            
+
         });
     </script>
 @stop

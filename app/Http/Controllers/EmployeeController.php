@@ -21,7 +21,8 @@ class EmployeeController extends Controller
     protected function buildQuery()
     {
       $table = Employee::getTableName();
-      return Employee::select([
+      return Employee::with(['position', 'site', 'sex'])
+          ->select([
        "{$table}.id","{$table}.site_id","{$table}.position_id","{$table}.nip","{$table}.name","{$table}.sex_id","{$table}.dob","{$table}.no_hp","{$table}.height","{$table}.weight","{$table}.hire_at","{$table}.address","{$table}.is_active"
       ]);
     }
@@ -63,7 +64,10 @@ class EmployeeController extends Controller
 
                     return '<div class="btn-group">' . implode('', $actions) . '</div>';
                 })
-                ->rawColumns(['actions'])
+                ->editColumn('is_active', function($record) {
+                    return $record->statusIcon;
+                })
+                ->rawColumns(['actions', 'is_active'])
                 ->make(true);
         } else {
             return view('employee.index');
@@ -209,7 +213,7 @@ class EmployeeController extends Controller
         ];
     }
 
-    
+
 
     private function formData() {
         return [

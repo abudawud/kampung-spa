@@ -21,7 +21,8 @@ class CustomerController extends Controller
     protected function buildQuery()
     {
       $table = Customer::getTableName();
-      return Customer::select([
+      return Customer::with('site')
+          ->select([
        "{$table}.id","{$table}.site_id","{$table}.code","{$table}.name","{$table}.instagram","{$table}.birth_date","{$table}.no_hp","{$table}.address","{$table}.is_member"
       ]);
     }
@@ -63,7 +64,10 @@ class CustomerController extends Controller
 
                     return '<div class="btn-group">' . implode('', $actions) . '</div>';
                 })
-                ->rawColumns(['actions'])
+                ->editColumn('is_member', function($record) {
+                    return $record->memberIcon;
+                })
+                ->rawColumns(['actions', 'is_member'])
                 ->make(true);
         } else {
             return view('customer.index');
@@ -209,7 +213,7 @@ class CustomerController extends Controller
         ];
     }
 
-    
+
 
     private function formData() {
         return [

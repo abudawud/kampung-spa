@@ -35,6 +35,8 @@ class Customer extends BaseModel
         'no_hp',
         'address',
         'is_member',
+
+        'site',
     ];
 
     const VALIDATION_RULES = [
@@ -47,7 +49,19 @@ class Customer extends BaseModel
         'is_member' => 'nullable',
     ];
 
-    const VALIDATION_MESSAGES = [
+    const VALIDATION_MESSAGES = [];
 
-    ];
+    public function site() {
+        return $this->belongsTo(Site::class, 'site_id');
+    }
+
+    public function getMemberTextAttribute()
+    {
+        return $this->is_member == 1 ? 'Member' : 'Non-Member';
+    }
+
+    public function getMemberIconAttribute()
+    {
+        return $this->is_member == 1 ? '<span class="fas fa-check-circle text-primary"></span>' : '<span class="fas fa-times-circle text-danger"></span>';
+    }
 }

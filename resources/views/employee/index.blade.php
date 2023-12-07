@@ -27,7 +27,7 @@
                                 <a id="btn-create" href="{{ route('employee.create') }}" class="btn btn-primary modal-remote"> <span
                                         class="fas fa-plus"></span></a>
                             @endcan
-                            
+
                             <a id="btn-reset" class="btn btn-default"> <span class="fas fa-sync"></span></a>
                         </div>
                     </div>
@@ -105,7 +105,7 @@
               pageLength: 25,
               colReorder: true,
               order: [[0, 'desc']],
-              columns: [{"data":"id"},{"data":"site_id"},{"data":"position_id"},{"data":"nip"},{"data":"name"},{"data":"sex_id"},{"data":"dob"},{"data":"no_hp"},{"data":"height"},{"data":"weight"},{"data":"hire_at"},{"data":"address"},{"data":"is_active"},{"data":"actions"}],
+              columns: [{"data":"id"},{"data":"site.city_name"},{"data":"position.name"},{"data":"nip"},{"data":"name"},{"data":"sex.name"},{"data":"dob"},{"data":"no_hp"},{"data":"height"},{"data":"weight"},{"data":"hire_at"},{"data":"address"},{"data":"is_active"},{"data":"actions"}],
               columnDefs: [
                 {targets: -1, searchable: false, orderable: false, class: "text-center"},
                 {targets: 0, searchable: false},
@@ -132,7 +132,7 @@
                     });
             });
 
-            
+
         });
     </script>
 @stop
