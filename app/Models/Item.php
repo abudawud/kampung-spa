@@ -36,6 +36,8 @@ class Item extends BaseModel
         'member_price',
         'description',
         'is_active',
+
+        'site',
     ];
 
     const VALIDATION_RULES = [
@@ -49,7 +51,23 @@ class Item extends BaseModel
         'is_active' => 'nullable',
     ];
 
-    const VALIDATION_MESSAGES = [
+    const VALIDATION_MESSAGES = [];
 
-    ];
+    public static function newCode($siteCode)
+    {
+        $prefix = "I{$siteCode}-" . date('y');
+        $lastNo = static::where('code', 'like', "{$prefix}%")
+            ->latest('id');
+        $newNo = 1;
+        if ($lastNo->exists()) {
+            $newNo = (int) str_replace($prefix, "", $lastNo->first()->code);
+            $newNo += 1;
+        }
+
+        return $prefix . \Illuminate\Support\Str::padLeft($newNo, 4, 0);
+    }
+
+    public function site() {
+        return $this->belongsTo(Site::class, 'site_id');
+    }
 }

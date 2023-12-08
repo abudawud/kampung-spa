@@ -21,7 +21,8 @@ class ItemController extends Controller
     protected function buildQuery()
     {
       $table = Item::getTableName();
-      return Item::select([
+      return Item::with('site')
+          ->select([
        "{$table}.id","{$table}.site_id","{$table}.code","{$table}.name","{$table}.duration","{$table}.normal_price","{$table}.member_price","{$table}.description","{$table}.is_active"
       ]);
     }
@@ -63,7 +64,10 @@ class ItemController extends Controller
 
                     return '<div class="btn-group">' . implode('', $actions) . '</div>';
                 })
-                ->rawColumns(['actions'])
+                ->editColumn('is_active', function($record) {
+                    return $record->statusIcon;
+                })
+                ->rawColumns(['actions', 'is_active'])
                 ->make(true);
         } else {
             return view('item.index');
@@ -209,7 +213,7 @@ class ItemController extends Controller
         ];
     }
 
-    
+
 
     private function formData() {
         return [
