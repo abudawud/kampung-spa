@@ -1,6 +1,6 @@
 <?php
 
-use App\Models\BaseModel;
+use AbuDawud\AlCrudLaravel\Models\BaseModel;
 
 return [
     'parent_model' => BaseModel::class,
