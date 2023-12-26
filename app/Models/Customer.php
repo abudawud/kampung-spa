@@ -27,6 +27,7 @@ class Customer extends BaseModel
     ];
 
     public $visible = [
+        'id',
         'site_id',
         'code',
         'name',

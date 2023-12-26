@@ -1,10 +1,10 @@
 @extends('adminlte::page')
 
-@section('title', 'Master Cabang')
+@section('title', 'Order Package')
 @section('plugins.Datatables', true)
 
 @section('content_header')
-    <h1 class="m-0 text-dark">Master Cabang</h1>
+    <h1 class="m-0 text-dark">Order Package</h1>
 @stop
 @push('css')
 <style>
@@ -18,17 +18,17 @@
     <div class="row">
         <div class="col-12">
             <div class="card mb-0">
-                <h5 class="card-header bg-primary"><span class="fas fa-file-alt"></span> Data Master Cabang</h5>
+                <h5 class="card-header bg-primary"><span class="fas fa-file-alt"></span> Data Order Package</h5>
                 <div class="card-body p-2">
                     <em>*Gunakan filter <b>Search</b> untuk pencarian global / filter perkolom pada bagian bawah</em>
                     <div class="float-right">
                         <div class="btn-group">
-                            @can(App\Policies\SitePolicy::POLICY_NAME.".create")
-                                <a id="btn-create" href="{{ route('site.create') }}" class="btn btn-primary modal-remote"> <span
+                            @can(App\Policies\OrderPackagePolicy::POLICY_NAME.".create")
+                                <a id="btn-create" href="{{ route('order-package.create') }}" class="btn btn-primary modal-remote"> <span
                                         class="fas fa-plus"></span></a>
                             @endcan
-
-                            <a data-datatable-id="#datatable" id="btn-reset" class="btn btn-default"> <span class="fas fa-sync"></span></a>
+                            
+                            <a id="btn-reset" class="btn btn-default"> <span class="fas fa-sync"></span></a>
                         </div>
                     </div>
                 </div>
@@ -40,11 +40,11 @@
                       <thead>
                         <tr>
                           <th>Id</th>
-                          <th class="text-primary">City Code</th>
-                          <th class="text-primary">City Name</th>
-                          <th class="text-primary">Owner Name</th>
-                          <th class="text-primary">No Hp</th>
-                          <th class="text-primary">Address</th>
+                          <th class="text-primary">Order Id</th>
+                          <th class="text-primary">Package Id</th>
+                          <th class="text-primary">Qty</th>
+                          <th class="text-primary">Duration</th>
+                          <th class="text-primary">Price</th>
                           <th>Actions</th>
                         </tr>
                       </thead>
@@ -53,11 +53,11 @@
                       <tfoot>
                         <tr class="filter">
                           <th></th>
-                          <th class="filter">City Code</th>
-                          <th class="filter">City Name</th>
-                          <th class="filter">Owner Name</th>
-                          <th class="filter">No Hp</th>
-                          <th class="filter">Address</th>
+                          <th class="filter">Order Id</th>
+                          <th class="filter">Package Id</th>
+                          <th class="filter">Qty</th>
+                          <th class="filter">Duration</th>
+                          <th class="filter">Price</th>
                           <th></th>
                         </tr>
                       </tfoot>
@@ -68,7 +68,7 @@
         </div>
     </div>
 
-    <x-alcrud-modal title="Master Cabang" tableId="#datatable" />
+    <x-alcrud-modal title="Order Package" tableId="#datatable" />
 @stop
 
 @section('js')
@@ -87,11 +87,11 @@
               dom: dom,
               processing: true,
               serverSide: true,
-              ajax: '{{ route("site.index") }}',
+              ajax: "{{ route('order-package.index') }}",
               pageLength: 25,
               colReorder: true,
               order: [[0, 'desc']],
-              columns: [{"data":"id"},{"data":"city_code"},{"data":"city_name"},{"data":"owner_name"},{"data":"no_hp"},{"data":"address"},{"data":"actions"}],
+              columns: [{"data":"id"},{"data":"order_id"},{"data":"package_id"},{"data":"qty"},{"data":"duration"},{"data":"price"},{"data":"actions"}],
               columnDefs: [
                 {targets: -1, searchable: false, orderable: false, class: "text-center"},
                 {targets: 0, searchable: false},
@@ -118,7 +118,7 @@
                     });
             });
 
-
+            
         });
     </script>
 @stop

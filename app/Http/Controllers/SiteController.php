@@ -58,7 +58,7 @@ class SiteController extends Controller
                     $actions = [
                       $user->can(SitePolicy::POLICY_NAME.".view") ? "<a href='" . route("site.show", $record->id) . "' class='btn btn-xs btn-primary modal-remote' title='Show'><i class='fas fa-eye'></i></a>" : '', // show
                       $user->can(SitePolicy::POLICY_NAME.".update") ? "<a href='" . route("site.edit", $record->id) . "' class='btn btn-xs btn-warning modal-remote' title='Edit'><i class='fas fa-pencil-alt'></i></a>" : '', // edit
-                      $user->can(SitePolicy::POLICY_NAME.".delete") ? "<a href='" . route("site.destroy", $record->id) . "' class='btn btn-xs btn-danger btn-delete' title='Delete'><i class='fas fa-trash'></i></a>" : '', // delete
+                      $user->can(SitePolicy::POLICY_NAME.".delete") ? "<a data-title='Hapus Master Cabang' data-desc='Yakin ingin menghapus data cabang #" . $record->city_code . " ?' href='" . route("site.destroy", $record->id) . "' class='btn btn-xs btn-danger btn-delete' title='Delete'><i class='fas fa-trash'></i></a>" : '', // delete
                     ];
 
                     return '<div class="btn-group">' . implode('', $actions) . '</div>';
@@ -209,7 +209,7 @@ class SiteController extends Controller
         ];
     }
 
-    
+
 
     private function formData() {
         return [

@@ -3,10 +3,9 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
-use App\Models\Site;
-use Illuminate\Validation\Rule;
+use App\Models\OrderItem;
 
-class UpdateSiteRequest extends FormRequest
+class UpdateOrderItemRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -25,16 +24,11 @@ class UpdateSiteRequest extends FormRequest
      */
     public function rules()
     {
-        return [
-            'city_code' => [
-                'required',
-                Rule::unique(Site::class, 'city_code')->ignore($this->site->id),
-            ]
-        ] + Site::VALIDATION_RULES;
+        return OrderItem::VALIDATION_RULES;
     }
 
     public function messages()
     {
-        return Site::VALIDATION_MESSAGES;
+        return OrderItem::VALIDATION_MESSAGES;
     }
 }

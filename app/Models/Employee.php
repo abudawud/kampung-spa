@@ -31,6 +31,7 @@ class Employee extends BaseModel
     ];
 
     public $visible = [
+        'id',
         'site_id',
         'position_id',
         'nip',

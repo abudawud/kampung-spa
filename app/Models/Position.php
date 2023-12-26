@@ -11,6 +11,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 class Position extends BaseModel
 {
     use HasFactory;
+    const TERAPIS_ID = 2;
 
     // overide default value
     protected $table = "position";

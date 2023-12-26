@@ -7,6 +7,8 @@ use App\Http\Requests\UpdateEmployeeRequest;
 use App\Http\Requests\StoreEmployeeRequest;
 use App\Policies\EmployeePolicy;
 use App\Http\Controllers\Controller;
+use App\Models\Position;
+use App\Models\Sys\Role;
 use Illuminate\Http\Request;
 
 
@@ -20,16 +22,29 @@ class EmployeeController extends Controller
 
     protected function buildQuery()
     {
-      $table = Employee::getTableName();
-      return Employee::with(['position', 'site', 'sex'])
-          ->select([
-       "{$table}.id","{$table}.site_id","{$table}.position_id","{$table}.nip","{$table}.name","{$table}.sex_id","{$table}.dob","{$table}.no_hp","{$table}.height","{$table}.weight","{$table}.hire_at","{$table}.address","{$table}.is_active"
-      ]);
+        $user = auth()->user();
+        $employee = $user->employee;
+        $roles = $user->roles->pluck('name');
+        $table = Employee::getTableName();
+        $query = Employee::with(['position', 'site', 'sex'])->select([
+            "{$table}.id", "{$table}.site_id", "{$table}.position_id",
+            "{$table}.nip", "{$table}.name", "{$table}.sex_id",
+            "{$table}.dob", "{$table}.no_hp", "{$table}.height",
+            "{$table}.weight", "{$table}.hire_at", "{$table}.address",
+            "{$table}.is_active"
+        ]);
+
+        if (!$roles->contains(Role::ADMIN)) {
+            $query->where('site_id', $employee->site_id);
+            $query->where('position_id', Position::TERAPIS_ID);
+        }
+
+        return $query;
     }
 
     protected function buildDatatable($query)
     {
-      return datatables($query);
+        return datatables($query);
         // ->addColumn("firstCol", function (Employee $record) {
         //   return $record->field;
         // })
@@ -40,9 +55,9 @@ class EmployeeController extends Controller
 
     public function json()
     {
-      $query = $this->buildQuery()
-        ->limit(20);
-      return $this->buildDatatable($query)->make(true);
+        $query = $this->buildQuery()
+            ->limit(20);
+        return $this->buildDatatable($query)->make(true);
     }
 
     /**
@@ -57,14 +72,14 @@ class EmployeeController extends Controller
             return $this->buildDatatable($this->buildQuery())
                 ->addColumn('actions', function (Employee $record) use ($user) {
                     $actions = [
-                      $user->can(EmployeePolicy::POLICY_NAME.".view") ? "<a href='" . route("employee.show", $record->id) . "' class='btn btn-xs btn-primary modal-remote' title='Show'><i class='fas fa-eye'></i></a>" : '', // show
-                      $user->can(EmployeePolicy::POLICY_NAME.".update") ? "<a href='" . route("employee.edit", $record->id) . "' class='btn btn-xs btn-warning modal-remote' title='Edit'><i class='fas fa-pencil-alt'></i></a>" : '', // edit
-                      $user->can(EmployeePolicy::POLICY_NAME.".delete") ? "<a href='" . route("employee.destroy", $record->id) . "' class='btn btn-xs btn-danger btn-delete' title='Delete'><i class='fas fa-trash'></i></a>" : '', // delete
+                        $user->can(EmployeePolicy::POLICY_NAME . ".view") ? "<a href='" . route("employee.show", $record->id) . "' class='btn btn-xs btn-primary modal-remote' title='Show'><i class='fas fa-eye'></i></a>" : '', // show
+                        $user->can(EmployeePolicy::POLICY_NAME . ".update") ? "<a href='" . route("employee.edit", $record->id) . "' class='btn btn-xs btn-warning modal-remote' title='Edit'><i class='fas fa-pencil-alt'></i></a>" : '', // edit
+                        $user->can(EmployeePolicy::POLICY_NAME . ".delete") ? "<a href='" . route("employee.destroy", $record->id) . "' class='btn btn-xs btn-danger btn-delete' title='Delete'><i class='fas fa-trash'></i></a>" : '', // delete
                     ];
 
                     return '<div class="btn-group">' . implode('', $actions) . '</div>';
                 })
-                ->editColumn('is_active', function($record) {
+                ->editColumn('is_active', function ($record) {
                     return $record->statusIcon;
                 })
                 ->rawColumns(['actions', 'is_active'])
@@ -81,18 +96,18 @@ class EmployeeController extends Controller
      */
     public function create(Request $request)
     {
-      $view = view('employee.create', [
-        'record' => null
-      ] + $this->formData());
-      if ($request->ajax()) {
-        return response()->json([
-          'title' => "Tambah Master Pegawai",
-          'content' => $view->render(),
-          'footer' => '<button type="submit" class="btn btn-primary">Simpan</button>',
-        ]);
-      } else {
-        return $view;
-      }
+        $view = view('employee.create', [
+            'record' => null
+        ] + $this->formData());
+        if ($request->ajax()) {
+            return response()->json([
+                'title' => "Tambah Master Pegawai",
+                'content' => $view->render(),
+                'footer' => '<button type="submit" class="btn btn-primary">Simpan</button>',
+            ]);
+        } else {
+            return $view;
+        }
     }
 
     /**
@@ -131,15 +146,15 @@ class EmployeeController extends Controller
      */
     public function show(Request $request, Employee $employee)
     {
-      $view = view('employee.show', ['record' => $employee]);
-      if ($request->ajax()) {
-        return response()->json([
-          'title' => "Lihat Master Pegawai",
-          'content' => $view->render(),
-        ]);
-      } else {
-        return $view;
-      }
+        $view = view('employee.show', ['record' => $employee]);
+        if ($request->ajax()) {
+            return response()->json([
+                'title' => "Lihat Master Pegawai",
+                'content' => $view->render(),
+            ]);
+        } else {
+            return $view;
+        }
     }
 
     /**
@@ -150,18 +165,18 @@ class EmployeeController extends Controller
      */
     public function edit(Request $request, Employee $employee)
     {
-      $view = view('employee.edit', [
-        'record' => $employee
-      ] + $this->formData());
-      if ($request->ajax()) {
-        return response()->json([
-          'title' => "Edit Master Pegawai",
-          'content' => $view->render(),
-          'footer' => '<button type="submit" class="btn btn-primary">Simpan</button>',
-        ]);
-      } else {
-        return $view;
-      }
+        $view = view('employee.edit', [
+            'record' => $employee
+        ] + $this->formData());
+        if ($request->ajax()) {
+            return response()->json([
+                'title' => "Edit Master Pegawai",
+                'content' => $view->render(),
+                'footer' => '<button type="submit" class="btn btn-primary">Simpan</button>',
+            ]);
+        } else {
+            return $view;
+        }
     }
 
     /**
@@ -215,9 +230,8 @@ class EmployeeController extends Controller
 
 
 
-    private function formData() {
-        return [
-
-        ];
+    private function formData()
+    {
+        return [];
     }
 }

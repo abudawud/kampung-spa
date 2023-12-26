@@ -53,4 +53,8 @@ class Order extends BaseModel
     {
         return $this->belongsTo(Employee::class, 'terapis_id');
     }
+
+    public function createdBy() {
+        return $this->belongsTo(User::class, 'created_by');
+    }
 }
