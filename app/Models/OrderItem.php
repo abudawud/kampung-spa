@@ -27,15 +27,23 @@ class OrderItem extends BaseModel
         'item_id',
         'qty',
         'duration',
-        'price'
+        'price',
+
+        'item',
     ];
 
     const VALIDATION_RULES = [
         'item_id' => 'required',
         'qty' => 'required|integer',
-        'duration' => 'required|integer',
-        'price' => 'required|integer'
     ];
 
     const VALIDATION_MESSAGES = [];
+
+    public function order() {
+        return $this->belongsTo(Order::class, 'order_id');
+    }
+
+    public function item() {
+        return $this->belongsTo(Item::class, 'item_id');
+    }
 }

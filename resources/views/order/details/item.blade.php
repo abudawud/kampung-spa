@@ -15,8 +15,7 @@
                 <thead>
                     <tr>
                         <th>Id</th>
-                        <th class="text-primary">Order Id</th>
-                        <th class="text-primary">Item Id</th>
+                        <th class="text-primary">Item</th>
                         <th class="text-primary">Qty</th>
                         <th class="text-primary">Duration</th>
                         <th class="text-primary">Price</th>
@@ -28,8 +27,7 @@
                 <tfoot>
                     <tr class="filter">
                         <th></th>
-                        <th class="filter">Order Id</th>
-                        <th class="filter">Item Id</th>
+                        <th class="filter">Item</th>
                         <th class="filter">Qty</th>
                         <th class="filter">Duration</th>
                         <th class="filter">Price</th>
@@ -65,15 +63,16 @@
             columns: [{
                 "data": "id"
             }, {
-                "data": "order_id"
+                "data": "item.name"
             }, {
-                "data": "item_id"
+                "data": "qty",
+                "width": "40px",
             }, {
-                "data": "qty"
+                "data": "duration",
+                "width": "40px",
             }, {
-                "data": "duration"
-            }, {
-                "data": "price"
+                "data": "price",
+                "width": "40px",
             }, {
                 "data": "actions"
             }],

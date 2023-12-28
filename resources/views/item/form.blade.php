@@ -1,12 +1,8 @@
 {!! Form::token() !!}
 <div class="row">
-    <div class="col-md-6 form-group">
-        {!! Form::label("site_id", "Site Id") !!}
-        {!! Form::text("site_id", $record?->site_id, ["class" => "form-control"]) !!}
-    </div>
-    <div class="col-md-6 form-group">
-        {!! Form::label("code", "Code") !!}
-        {!! Form::text("code", $record?->code, ["class" => "form-control"]) !!}
+    <div class="col-md-12 form-group">
+        {!! Form::label("site_id", "Site") !!}
+        {!! Form::select("site_id", $sites, $record?->site_id, ["class" => "form-control"]) !!}
     </div>
     <div class="col-md-6 form-group">
         {!! Form::label("name", "Name") !!}
@@ -18,24 +14,33 @@
     </div>
     <div class="col-md-6 form-group">
         {!! Form::label("normal_price", "Normal Price") !!}
-        {!! Form::text("normal_price", $record?->normal_price, ["class" => "form-control"]) !!}
+        {!! Form::text("normal_price", $record?->normal_price, ["class" => "form-control money"]) !!}
     </div>
     <div class="col-md-6 form-group">
         {!! Form::label("member_price", "Member Price") !!}
-        {!! Form::text("member_price", $record?->member_price, ["class" => "form-control"]) !!}
+        {!! Form::text("member_price", $record?->member_price, ["class" => "form-control money"]) !!}
     </div>
-    <div class="col-md-6 form-group">
+    <div class="col-md-12 form-group">
         {!! Form::label("description", "Description") !!}
-        {!! Form::text("description", $record?->description, ["class" => "form-control"]) !!}
+        {!! Form::textarea("description", $record?->description, ["class" => "form-control", "rows" => "5"]) !!}
     </div>
     <div class="col-md-6 form-group">
-        {!! Form::label("is_active", "Is Active") !!}
-        {!! Form::text("is_active", $record?->is_active, ["class" => "form-control"]) !!}
+        {!! Form::hidden('is_active', 0) !!}
+        <div class="icheck-primary" title="Status">
+            {!! Form::checkbox('is_active', 1, $record?->is_active ?? 1, ['id' => 'is_active']) !!}
+            {!! Form::label('is_active', 'Status') !!}
+        </div>
     </div>
 </div>
 
 <script>
     jQuery(function($) {
-
+        $('#site_id').select2();
+        $('input.money').inputmask({
+            alias: 'numeric',
+            groupSeparator: ',',
+            placeholder: '0',
+            removeMaskOnSubmit: true,
+        });
     });
 </script>

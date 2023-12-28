@@ -7,6 +7,7 @@ use App\Http\Requests\UpdatePackageRequest;
 use App\Http\Requests\StorePackageRequest;
 use App\Policies\PackagePolicy;
 use App\Http\Controllers\Controller;
+use App\Models\Site;
 use Illuminate\Http\Request;
 
 
@@ -20,15 +21,17 @@ class PackageController extends Controller
 
     protected function buildQuery()
     {
-      $table = Package::getTableName();
-      return Package::select([
-       "{$table}.id","{$table}.site_id","{$table}.code","{$table}.name","{$table}.normal_price","{$table}.member_price","{$table}.description","{$table}.launch_at","{$table}.end_at"
-      ]);
+        $table = Package::getTableName();
+        return Package::select([
+            "{$table}.id", "{$table}.site_id", "{$table}.code",
+            "{$table}.name", "{$table}.normal_price", "{$table}.member_price",
+            "{$table}.description", "{$table}.launch_at", "{$table}.end_at"
+        ])->with(['site']);
     }
 
     protected function buildDatatable($query)
     {
-      return datatables($query);
+        return datatables($query);
         // ->addColumn("firstCol", function (Package $record) {
         //   return $record->field;
         // })
@@ -39,9 +42,9 @@ class PackageController extends Controller
 
     public function json()
     {
-      $query = $this->buildQuery()
-        ->limit(20);
-      return $this->buildDatatable($query)->make(true);
+        $query = $this->buildQuery()
+            ->limit(20);
+        return $this->buildDatatable($query)->make(true);
     }
 
     /**
@@ -56,9 +59,9 @@ class PackageController extends Controller
             return $this->buildDatatable($this->buildQuery())
                 ->addColumn('actions', function (Package $record) use ($user) {
                     $actions = [
-                      $user->can(PackagePolicy::POLICY_NAME.".view") ? "<a href='" . route("package.show", $record->id) . "' class='btn btn-xs btn-primary modal-remote' title='Show'><i class='fas fa-eye'></i></a>" : '', // show
-                      $user->can(PackagePolicy::POLICY_NAME.".update") ? "<a href='" . route("package.edit", $record->id) . "' class='btn btn-xs btn-warning modal-remote' title='Edit'><i class='fas fa-pencil-alt'></i></a>" : '', // edit
-                      $user->can(PackagePolicy::POLICY_NAME.".delete") ? "<a href='" . route("package.destroy", $record->id) . "' class='btn btn-xs btn-danger btn-delete' title='Delete'><i class='fas fa-trash'></i></a>" : '', // delete
+                        $user->can(PackagePolicy::POLICY_NAME . ".view") ? "<a href='" . route("package.show", $record->id) . "' class='btn btn-xs btn-primary modal-remote' title='Show'><i class='fas fa-eye'></i></a>" : '', // show
+                        $user->can(PackagePolicy::POLICY_NAME . ".update") ? "<a href='" . route("package.edit", $record->id) . "' class='btn btn-xs btn-warning modal-remote' title='Edit'><i class='fas fa-pencil-alt'></i></a>" : '', // edit
+                        $user->can(PackagePolicy::POLICY_NAME . ".delete") ? "<a href='" . route("package.destroy", $record->id) . "' class='btn btn-xs btn-danger btn-delete' title='Delete'><i class='fas fa-trash'></i></a>" : '', // delete
                     ];
 
                     return '<div class="btn-group">' . implode('', $actions) . '</div>';
@@ -77,18 +80,18 @@ class PackageController extends Controller
      */
     public function create(Request $request)
     {
-      $view = view('package.create', [
-        'record' => null
-      ] + $this->formData());
-      if ($request->ajax()) {
-        return response()->json([
-          'title' => "Tambah Master Paket",
-          'content' => $view->render(),
-          'footer' => '<button type="submit" class="btn btn-primary">Simpan</button>',
-        ]);
-      } else {
-        return $view;
-      }
+        $view = view('package.create', [
+            'record' => null
+        ] + $this->formData());
+        if ($request->ajax()) {
+            return response()->json([
+                'title' => "Tambah Master Paket",
+                'content' => $view->render(),
+                'footer' => '<button type="submit" class="btn btn-primary">Simpan</button>',
+            ]);
+        } else {
+            return $view;
+        }
     }
 
     /**
@@ -99,7 +102,11 @@ class PackageController extends Controller
      */
     public function store(StorePackageRequest $request)
     {
-        Package::create(['created_by' => auth()->id()] + $request->validated());
+        $site = Site::findOrFail($request->validated('site_id'));
+        Package::create([
+            'created_by' => auth()->id(),
+            'code' => Package::newCode($site->city_code),
+        ] + $request->validated());
         if ($request->ajax()) {
             return [
                 'notification' => [
@@ -127,15 +134,15 @@ class PackageController extends Controller
      */
     public function show(Request $request, Package $package)
     {
-      $view = view('package.show', ['record' => $package]);
-      if ($request->ajax()) {
-        return response()->json([
-          'title' => "Lihat Master Paket",
-          'content' => $view->render(),
-        ]);
-      } else {
-        return $view;
-      }
+        $view = view('package.show', ['record' => $package]);
+        if ($request->ajax()) {
+            return response()->json([
+                'title' => "Lihat Master Paket",
+                'content' => $view->render(),
+            ]);
+        } else {
+            return $view;
+        }
     }
 
     /**
@@ -146,18 +153,18 @@ class PackageController extends Controller
      */
     public function edit(Request $request, Package $package)
     {
-      $view = view('package.edit', [
-        'record' => $package
-      ] + $this->formData());
-      if ($request->ajax()) {
-        return response()->json([
-          'title' => "Edit Master Paket",
-          'content' => $view->render(),
-          'footer' => '<button type="submit" class="btn btn-primary">Simpan</button>',
-        ]);
-      } else {
-        return $view;
-      }
+        $view = view('package.edit', [
+            'record' => $package
+        ] + $this->formData());
+        if ($request->ajax()) {
+            return response()->json([
+                'title' => "Edit Master Paket",
+                'content' => $view->render(),
+                'footer' => '<button type="submit" class="btn btn-primary">Simpan</button>',
+            ]);
+        } else {
+            return $view;
+        }
     }
 
     /**
@@ -209,11 +216,13 @@ class PackageController extends Controller
         ];
     }
 
-    
 
-    private function formData() {
+
+    private function formData()
+    {
+        $user = auth()->user();
         return [
-
+            'sites' => $user->availableSites()->get()->pluck('city_name', 'id'),
         ];
     }
 }

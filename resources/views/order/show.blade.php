@@ -1,6 +1,7 @@
 @extends('adminlte::page')
 
 @section('plugins.Datatables', true)
+@section('plugins.Select2', true)
 @section('title', 'Detail Order #' . $record->code)
 @section('content_header')
 <h1 class="m-0 text-dark">Detail Order #{{ $record->code }}</h1>

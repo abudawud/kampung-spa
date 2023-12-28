@@ -7,7 +7,9 @@ use App\Http\Requests\UpdateOrderItemRequest;
 use App\Http\Requests\StoreOrderItemRequest;
 use App\Policies\OrderItemPolicy;
 use App\Http\Controllers\Controller;
+use App\Models\Item;
 use App\Models\Order;
+use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Http\Request;
 
 
@@ -23,8 +25,9 @@ class OrderItemController extends Controller
     {
         $table = OrderItem::getTableName();
         return OrderItem::select([
-            "{$table}.id", "{$table}.order_id", "{$table}.item_id", "{$table}.qty", "{$table}.duration", "{$table}.price"
-        ]);
+            "{$table}.id", "{$table}.order_id", "{$table}.item_id",
+            "{$table}.qty", "{$table}.duration", "{$table}.price"
+        ])->with(['item']);
     }
 
     protected function buildDatatable($query)
@@ -101,10 +104,11 @@ class OrderItemController extends Controller
      */
     public function store(StoreOrderItemRequest $request, Order $order)
     {
+        $item = Item::findOrFail($request->validated(['item_id']));
         OrderItem::create([
             'created_by' => auth()->id(),
             'order_id' => $order->id,
-        ] + $request->validated());
+        ] + $request->validated() + $this->calculateData($request, $order, $item));
         if ($request->ajax()) {
             return [
                 'notification' => [
@@ -153,7 +157,8 @@ class OrderItemController extends Controller
     public function edit(Request $request, OrderItem $orderItem)
     {
         $view = view('order-item.edit', [
-            'record' => $orderItem
+            'record' => $orderItem,
+            'order' => $orderItem->order,
         ] + $this->formData());
         if ($request->ajax()) {
             return response()->json([
@@ -175,7 +180,7 @@ class OrderItemController extends Controller
      */
     public function update(UpdateOrderItemRequest $request, OrderItem $orderItem)
     {
-        $orderItem->update($request->validated());
+        $orderItem->update($this->calculateData($request, $orderItem->order, $orderItem->item) + $request->validated());
         if ($request->ajax()) {
             return [
                 'notification' => [
@@ -211,12 +216,19 @@ class OrderItemController extends Controller
                 'title' => 'Hapus Order Item',
                 'message' => 'Berhasil menghapus Order Item',
             ],
+            'datatableId' => '#datatable-item',
             'code' => 200,
             'message' => 'Success',
         ];
     }
 
-
+    private function calculateData(FormRequest $request, Order $order, Item $item)
+    {
+        return [
+            'duration' => $item->duration * $request->validated('qty'),
+            'price' => $item->guestPrice($order->customer) * $request->validated('qty'),
+        ];
+    }
 
     private function formData()
     {

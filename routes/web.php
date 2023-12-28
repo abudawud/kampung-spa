@@ -27,6 +27,7 @@ Route::get('/customer-registration/export', [App\Http\Controllers\CustomerRegist
 // json routes
 Route::get('/customer/json', [App\Http\Controllers\CustomerController::class, 'json'])->name('customer.json');
 Route::get('/employee/json', [App\Http\Controllers\EmployeeController::class, 'json'])->name('employee.json');
+Route::get('/item/json', [App\Http\Controllers\ItemController::class, 'json'])->name('item.json');
 
 Route::resource('site', App\Http\Controllers\SiteController::class);
 Route::resource('employee', App\Http\Controllers\EmployeeController::class);

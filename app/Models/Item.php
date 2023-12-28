@@ -28,6 +28,7 @@ class Item extends BaseModel
     ];
 
     public $visible = [
+        'id',
         'site_id',
         'code',
         'name',
@@ -69,5 +70,13 @@ class Item extends BaseModel
 
     public function site() {
         return $this->belongsTo(Site::class, 'site_id');
+    }
+
+    public function guestPrice(Customer $customer) {
+        return $customer->is_member ? $this->member_price : $this->normal_price;
+    }
+
+    public function fullName(Customer $customer) {
+        return "{$this->name} | {$this->duration}\" | {$this->guestPrice($customer)}";
     }
 }

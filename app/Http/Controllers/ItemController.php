@@ -7,6 +7,9 @@ use App\Http\Requests\UpdateItemRequest;
 use App\Http\Requests\StoreItemRequest;
 use App\Policies\ItemPolicy;
 use App\Http\Controllers\Controller;
+use App\Models\Customer;
+use App\Models\Site;
+use App\Models\Sys\Role;
 use Illuminate\Http\Request;
 
 
@@ -20,16 +23,18 @@ class ItemController extends Controller
 
     protected function buildQuery()
     {
-      $table = Item::getTableName();
-      return Item::with('site')
-          ->select([
-       "{$table}.id","{$table}.site_id","{$table}.code","{$table}.name","{$table}.duration","{$table}.normal_price","{$table}.member_price","{$table}.description","{$table}.is_active"
-      ]);
+        $table = Item::getTableName();
+        return Item::with('site')
+            ->select([
+                "{$table}.id", "{$table}.site_id", "{$table}.code",
+                "{$table}.name", "{$table}.duration", "{$table}.normal_price",
+                "{$table}.member_price", "{$table}.description", "{$table}.is_active"
+            ]);
     }
 
     protected function buildDatatable($query)
     {
-      return datatables($query);
+        return datatables($query);
         // ->addColumn("firstCol", function (Item $record) {
         //   return $record->field;
         // })
@@ -38,11 +43,21 @@ class ItemController extends Controller
         // });
     }
 
-    public function json()
+    public function json(Request $request)
     {
-      $query = $this->buildQuery()
-        ->limit(20);
-      return $this->buildDatatable($query)->make(true);
+        $query = $this->buildQuery()
+            ->limit(20);
+        $datatable = $this->buildDatatable($query)
+            ->rawColumns(['name']);
+
+        if ($request->has('customer_id')) {
+            $customer = Customer::find($request->get('customer_id'));
+            $datatable->addColumn('guest_price', function ($record) use ($customer) {
+                return $record->guestPrice($customer);
+            });
+        }
+
+        return $datatable->make(true);
     }
 
     /**
@@ -57,14 +72,14 @@ class ItemController extends Controller
             return $this->buildDatatable($this->buildQuery())
                 ->addColumn('actions', function (Item $record) use ($user) {
                     $actions = [
-                      $user->can(ItemPolicy::POLICY_NAME.".view") ? "<a href='" . route("item.show", $record->id) . "' class='btn btn-xs btn-primary modal-remote' title='Show'><i class='fas fa-eye'></i></a>" : '', // show
-                      $user->can(ItemPolicy::POLICY_NAME.".update") ? "<a href='" . route("item.edit", $record->id) . "' class='btn btn-xs btn-warning modal-remote' title='Edit'><i class='fas fa-pencil-alt'></i></a>" : '', // edit
-                      $user->can(ItemPolicy::POLICY_NAME.".delete") ? "<a href='" . route("item.destroy", $record->id) . "' class='btn btn-xs btn-danger btn-delete' title='Delete'><i class='fas fa-trash'></i></a>" : '', // delete
+                        $user->can(ItemPolicy::POLICY_NAME . ".view") ? "<a href='" . route("item.show", $record->id) . "' class='btn btn-xs btn-primary modal-remote' title='Show'><i class='fas fa-eye'></i></a>" : '', // show
+                        $user->can(ItemPolicy::POLICY_NAME . ".update") ? "<a href='" . route("item.edit", $record->id) . "' class='btn btn-xs btn-warning modal-remote' title='Edit'><i class='fas fa-pencil-alt'></i></a>" : '', // edit
+                        $user->can(ItemPolicy::POLICY_NAME . ".delete") ? "<a href='" . route("item.destroy", $record->id) . "' class='btn btn-xs btn-danger btn-delete' title='Delete'><i class='fas fa-trash'></i></a>" : '', // delete
                     ];
 
                     return '<div class="btn-group">' . implode('', $actions) . '</div>';
                 })
-                ->editColumn('is_active', function($record) {
+                ->editColumn('is_active', function ($record) {
                     return $record->statusIcon;
                 })
                 ->rawColumns(['actions', 'is_active'])
@@ -81,18 +96,18 @@ class ItemController extends Controller
      */
     public function create(Request $request)
     {
-      $view = view('item.create', [
-        'record' => null
-      ] + $this->formData());
-      if ($request->ajax()) {
-        return response()->json([
-          'title' => "Tambah Master Treatment",
-          'content' => $view->render(),
-          'footer' => '<button type="submit" class="btn btn-primary">Simpan</button>',
-        ]);
-      } else {
-        return $view;
-      }
+        $view = view('item.create', [
+            'record' => null
+        ] + $this->formData());
+        if ($request->ajax()) {
+            return response()->json([
+                'title' => "Tambah Master Treatment",
+                'content' => $view->render(),
+                'footer' => '<button type="submit" class="btn btn-primary">Simpan</button>',
+            ]);
+        } else {
+            return $view;
+        }
     }
 
     /**
@@ -103,7 +118,11 @@ class ItemController extends Controller
      */
     public function store(StoreItemRequest $request)
     {
-        Item::create(['created_by' => auth()->id()] + $request->validated());
+        $site = Site::findOrFail($request->validated('site_id'));
+        Item::create([
+            'created_by' => auth()->id(),
+            'code' => Item::newCode($site->city_code),
+        ] + $request->validated());
         if ($request->ajax()) {
             return [
                 'notification' => [
@@ -131,15 +150,15 @@ class ItemController extends Controller
      */
     public function show(Request $request, Item $item)
     {
-      $view = view('item.show', ['record' => $item]);
-      if ($request->ajax()) {
-        return response()->json([
-          'title' => "Lihat Master Treatment",
-          'content' => $view->render(),
-        ]);
-      } else {
-        return $view;
-      }
+        $view = view('item.show', ['record' => $item]);
+        if ($request->ajax()) {
+            return response()->json([
+                'title' => "Lihat Master Treatment",
+                'content' => $view->render(),
+            ]);
+        } else {
+            return $view;
+        }
     }
 
     /**
@@ -150,18 +169,18 @@ class ItemController extends Controller
      */
     public function edit(Request $request, Item $item)
     {
-      $view = view('item.edit', [
-        'record' => $item
-      ] + $this->formData());
-      if ($request->ajax()) {
-        return response()->json([
-          'title' => "Edit Master Treatment",
-          'content' => $view->render(),
-          'footer' => '<button type="submit" class="btn btn-primary">Simpan</button>',
-        ]);
-      } else {
-        return $view;
-      }
+        $view = view('item.edit', [
+            'record' => $item
+        ] + $this->formData());
+        if ($request->ajax()) {
+            return response()->json([
+                'title' => "Edit Master Treatment",
+                'content' => $view->render(),
+                'footer' => '<button type="submit" class="btn btn-primary">Simpan</button>',
+            ]);
+        } else {
+            return $view;
+        }
     }
 
     /**
@@ -215,9 +234,11 @@ class ItemController extends Controller
 
 
 
-    private function formData() {
+    private function formData()
+    {
+        $user = auth()->user();
         return [
-
+            'sites' => $user->availableSites()->get()->pluck('city_name', 'id'),
         ];
     }
 }
