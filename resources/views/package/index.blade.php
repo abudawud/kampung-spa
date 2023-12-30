@@ -47,6 +47,7 @@
                                     <th class="text-primary">Site</th>
                                     <th class="text-primary">Code</th>
                                     <th class="text-primary">Name</th>
+                                    <th class="text-primary">Duration</th>
                                     <th class="text-primary">Normal Price</th>
                                     <th class="text-primary">Member Price</th>
                                     <th class="text-primary">Description</th>
@@ -63,6 +64,7 @@
                                     <th class="filter">Site</th>
                                     <th class="filter">Code</th>
                                     <th class="filter">Name</th>
+                                    <th class="filter">Duration</th>
                                     <th class="filter">Normal Price</th>
                                     <th class="filter">Member Price</th>
                                     <th class="filter">Description</th>
@@ -112,6 +114,8 @@
                 }, {
                     "data": "name"
                 }, {
+                    "data": "duration"
+                }, {
                     "data": "normal_price"
                 }, {
                     "data": "member_price"
@@ -122,13 +126,18 @@
                 }, {
                     "data": "end_at"
                 }, {
-                    "data": "actions"
+                    "data": "actions",
+                    "width": "100px",
                 }],
                 columnDefs: [{
                         targets: -1,
                         searchable: false,
                         orderable: false,
                         class: "text-center"
+                    },
+                    {
+                        targets: [4, 5, 6],
+                        width: "50px",
                     },
                     {
                         targets: 0,

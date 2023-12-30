@@ -1,12 +1,16 @@
 {!! Form::token() !!}
 <div class="row">
-    <div class="col-md-6 form-group">
+    <div class="col-md-12 form-group">
         {!! Form::label("site_id", "Site") !!}
         {!! Form::select("site_id", $sites, $record?->site_id, ["class" => "form-control"]) !!}
     </div>
     <div class="col-md-6 form-group">
         {!! Form::label("name", "Name") !!}
         {!! Form::text("name", $record?->name, ["class" => "form-control"]) !!}
+    </div>
+    <div class="col-md-6 form-group">
+        {!! Form::label("duration", "Duration") !!}
+        {!! Form::text("duration", $record?->duration, ["class" => "form-control"]) !!}
     </div>
     <div class="col-md-6 form-group">
         {!! Form::label("normal_price", "Normal Price") !!}

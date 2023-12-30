@@ -27,16 +27,24 @@ class OrderPackage extends BaseModel
         'package_id',
         'qty',
         'duration',
-        'price'
+        'price',
+
+        'package',
     ];
 
     const VALIDATION_RULES = [
         'package_id' => 'required',
         'qty' => 'required|integer',
-        'duration' => 'required|integer',
-        'price' => 'required|integer'
     ];
 
     const VALIDATION_MESSAGES = [
     ];
+
+    public function order() {
+        return $this->belongsTo(Order::class, 'order_id');
+    }
+
+    public function package() {
+        return $this->belongsTo(Package::class, 'package_id');
+    }
 }

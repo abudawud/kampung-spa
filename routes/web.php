@@ -28,6 +28,7 @@ Route::get('/customer-registration/export', [App\Http\Controllers\CustomerRegist
 Route::get('/customer/json', [App\Http\Controllers\CustomerController::class, 'json'])->name('customer.json');
 Route::get('/employee/json', [App\Http\Controllers\EmployeeController::class, 'json'])->name('employee.json');
 Route::get('/item/json', [App\Http\Controllers\ItemController::class, 'json'])->name('item.json');
+Route::get('/package/json', [App\Http\Controllers\PackageController::class, 'json'])->name('package.json');
 
 Route::resource('site', App\Http\Controllers\SiteController::class);
 Route::resource('employee', App\Http\Controllers\EmployeeController::class);
@@ -38,3 +39,4 @@ Route::resource('order', App\Http\Controllers\OrderController::class);
 Route::resource('order.order-package', App\Http\Controllers\OrderPackageController::class)->shallow();
 Route::resource('order.order-item', App\Http\Controllers\OrderItemController::class)->shallow();
 Route::resource('customer-registration', App\Http\Controllers\CustomerRegistrationController::class);
+Route::resource('package.package-item', App\Http\Controllers\PackageItemController::class)->shallow()->except(['update', 'edit', 'show']);

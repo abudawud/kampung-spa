@@ -86,7 +86,7 @@
                 </div>
             </div>
             <div class="card-footer">
-                <a href='{{ route('order.index') }}' class='btn btn-secondary'>Batal</a>
+                <a href='{{ route('order.index') }}' class='btn btn-secondary'>Kembali</a>
             </div>
         </div>
     </div>

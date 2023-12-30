@@ -7,6 +7,7 @@ use App\Http\Requests\UpdatePackageRequest;
 use App\Http\Requests\StorePackageRequest;
 use App\Policies\PackagePolicy;
 use App\Http\Controllers\Controller;
+use App\Models\Customer;
 use App\Models\Site;
 use Illuminate\Http\Request;
 
@@ -25,7 +26,8 @@ class PackageController extends Controller
         return Package::select([
             "{$table}.id", "{$table}.site_id", "{$table}.code",
             "{$table}.name", "{$table}.normal_price", "{$table}.member_price",
-            "{$table}.description", "{$table}.launch_at", "{$table}.end_at"
+            "{$table}.description", "{$table}.launch_at", "{$table}.end_at",
+            "{$table}.duration",
         ])->with(['site']);
     }
 
@@ -40,11 +42,21 @@ class PackageController extends Controller
         // });
     }
 
-    public function json()
+    public function json(Request $request)
     {
         $query = $this->buildQuery()
             ->limit(20);
-        return $this->buildDatatable($query)->make(true);
+        $datatable = $this->buildDatatable($query)
+            ->rawColumns(['name']);
+
+        if ($request->has('customer_id')) {
+            $customer = Customer::find($request->get('customer_id'));
+            $datatable->addColumn('guest_price', function ($record) use ($customer) {
+                return $record->guestPrice($customer);
+            });
+        }
+
+        return $datatable->make(true);
     }
 
     /**
@@ -64,7 +76,10 @@ class PackageController extends Controller
                         $user->can(PackagePolicy::POLICY_NAME . ".delete") ? "<a href='" . route("package.destroy", $record->id) . "' class='btn btn-xs btn-danger btn-delete' title='Delete'><i class='fas fa-trash'></i></a>" : '', // delete
                     ];
 
-                    return '<div class="btn-group">' . implode('', $actions) . '</div>';
+                    $extraAction = [];
+                    $extraAction[] = "<a class='btn btn-xs bg-secondary' href='" . route('package.package-item.index', $record) . "'><span class='fas fa-fw fa-cubes'></span></a>";
+
+                    return '<div class="btn-group mx-1">' . implode('', $extraAction) . '</div>' . '<div class="btn-group">' . implode('', $actions) . '</div>';
                 })
                 ->rawColumns(['actions'])
                 ->make(true);

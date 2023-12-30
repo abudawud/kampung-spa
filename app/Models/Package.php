@@ -19,6 +19,7 @@ class Package extends BaseModel
         'code',
         'name',
         'image_path',
+        'duration',
         'normal_price',
         'member_price',
         'description',
@@ -28,9 +29,11 @@ class Package extends BaseModel
     ];
 
     public $visible = [
+        'id',
         'site_id',
         'code',
         'name',
+        'duration',
         'normal_price',
         'member_price',
         'description',
@@ -43,6 +46,7 @@ class Package extends BaseModel
     const VALIDATION_RULES = [
         'site_id' => 'required',
         'name' => 'required',
+        'duration' => 'required|integer',
         'image_path' => 'nullable',
         'normal_price' => 'required|integer|gte:0',
         'member_price' => 'required|integer|gte:0',
@@ -71,6 +75,14 @@ class Package extends BaseModel
 
     public function site() {
         return $this->belongsTo(Site::class, 'site_id');
+    }
+
+    public function items() {
+        return $this->hasMany(PackageItem::class, 'package_id');
+    }
+
+    public function createdBy() {
+        return $this->belongsTo(User::class, 'created_by');
     }
 
     public function guestPrice(Customer $customer) {

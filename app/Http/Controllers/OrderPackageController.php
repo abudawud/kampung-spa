@@ -8,6 +8,8 @@ use App\Http\Requests\StoreOrderPackageRequest;
 use App\Policies\OrderPackagePolicy;
 use App\Http\Controllers\Controller;
 use App\Models\Order;
+use App\Models\Package;
+use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Http\Request;
 
 
@@ -23,8 +25,9 @@ class OrderPackageController extends Controller
     {
         $table = OrderPackage::getTableName();
         return OrderPackage::select([
-            "{$table}.id", "{$table}.order_id", "{$table}.package_id", "{$table}.qty", "{$table}.duration", "{$table}.price"
-        ]);
+            "{$table}.id", "{$table}.order_id", "{$table}.package_id",
+            "{$table}.qty", "{$table}.duration", "{$table}.price"
+        ])->with('package');
     }
 
     protected function buildDatatable($query)
@@ -101,10 +104,11 @@ class OrderPackageController extends Controller
      */
     public function store(StoreOrderPackageRequest $request, Order $order)
     {
+        $package = Package::findOrFail($request->validated(['package_id']));
         OrderPackage::create([
             'order_id' => $order->id,
             'created_by' => auth()->id()
-        ] + $request->validated());
+        ] + $request->validated() + $this->calculateData($request, $order, $package));
         if ($request->ajax()) {
             return [
                 'notification' => [
@@ -112,6 +116,7 @@ class OrderPackageController extends Controller
                     'title' => 'Tambah Order Package',
                     'message' => 'Berhasil menambah Order Package',
                 ],
+                'datatableId' => '#datatable-package',
                 'code' => 200,
                 'message' => 'Success',
             ];
@@ -152,7 +157,8 @@ class OrderPackageController extends Controller
     public function edit(Request $request, OrderPackage $orderPackage)
     {
         $view = view('order-package.edit', [
-            'record' => $orderPackage
+            'record' => $orderPackage,
+            'order' => $orderPackage->order,
         ] + $this->formData());
         if ($request->ajax()) {
             return response()->json([
@@ -174,7 +180,7 @@ class OrderPackageController extends Controller
      */
     public function update(UpdateOrderPackageRequest $request, OrderPackage $orderPackage)
     {
-        $orderPackage->update($request->validated());
+        $orderPackage->update($this->calculateData($request, $orderPackage->order, $orderPackage->package) +$request->validated());
         if ($request->ajax()) {
             return [
                 'notification' => [
@@ -182,6 +188,7 @@ class OrderPackageController extends Controller
                     'title' => 'Update Order Package',
                     'message' => 'Berhasil merubah Order Package',
                 ],
+                'datatableId' => '#datatable-package',
                 'code' => 200,
                 'message' => 'Success',
             ];
@@ -209,12 +216,20 @@ class OrderPackageController extends Controller
                 'title' => 'Hapus Order Package',
                 'message' => 'Berhasil menghapus Order Package',
             ],
+            'datatableId' => '#datatable-package',
             'code' => 200,
             'message' => 'Success',
         ];
     }
 
 
+    private function calculateData(FormRequest $request, Order $order, Package $package)
+    {
+        return [
+            'duration' => $package->duration * $request->validated('qty'),
+            'price' => $package->guestPrice($order->customer) * $request->validated('qty'),
+        ];
+    }
 
     private function formData()
     {

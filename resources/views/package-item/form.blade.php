@@ -1,13 +1,10 @@
 {!! Form::token() !!}
 <div class="row">
-    <input type="hidden" value="{{ $order->customer_id }}" id="order-item-customer-id">
-    <div class="col-md-10 form-group">
-        {!! Form::label('item_id', 'Item') !!}
-        {!! Form::select('item_id', [$record?->item_id => $record?->item->fullName($record?->order->customer)], $record?->item_id, ['class' => 'form-control']) !!}
-    </div>
-    <div class="col-md-2 form-group">
-        {!! Form::label('qty', 'Qty') !!}
-        {!! Form::text('qty', $record?->qty, ['class' => 'form-control text-right']) !!}
+    <input id="site-id" value="{{ $package->site_id }}" type="hidden">
+
+    <div class="col-md-12 form-group">
+        {!! Form::label("item_id", "Pilih Treatment") !!}
+        {!! Form::select("item_id", [], $record?->item_id, ["class" => "form-control", "multiple" => "multiple", "name" => "items[]"]) !!}
     </div>
 </div>
 
@@ -25,9 +22,10 @@
                         length: 10,
                         "columns[0][data]": "name",
                         "columns[0][search][value]": params.term,
+                        "columns[1][data]": "site_id",
+                        "columns[1][search][value]": $('#site-id').val(),
                         "order[0][column]": 0,
                         "order[0][dir]": "asc",
-                        "customer_id": $('#order-item-customer-id').val(),
                     };
                 },
                 processResults: function(data) {
@@ -35,8 +33,7 @@
                         results: data.data.map(function(item) {
                             return {
                                 id: item.id,
-                                text: `${item.name} | ${item.duration}" | Rp ${item.guest_price}`,
-                                name: item.name,
+                                text: item.name,
                             };
                         })
                     };

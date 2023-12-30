@@ -15,8 +15,7 @@
                 <thead>
                     <tr>
                         <th>Id</th>
-                        <th class="text-primary">Order Id</th>
-                        <th class="text-primary">Package Id</th>
+                        <th class="text-primary">Package</th>
                         <th class="text-primary">Qty</th>
                         <th class="text-primary">Duration</th>
                         <th class="text-primary">Price</th>
@@ -28,8 +27,7 @@
                 <tfoot>
                     <tr class="filter">
                         <th></th>
-                        <th class="filter">Order Id</th>
-                        <th class="filter">Package Id</th>
+                        <th class="filter">Package</th>
                         <th class="filter">Qty</th>
                         <th class="filter">Duration</th>
                         <th class="filter">Price</th>
@@ -65,9 +63,7 @@
             columns: [{
                 "data": "id"
             }, {
-                "data": "order_id"
-            }, {
-                "data": "package_id"
+                "data": "package.name"
             }, {
                 "data": "qty"
             }, {
@@ -86,6 +82,10 @@
                 {
                     targets: 0,
                     searchable: false
+                },
+                {
+                    targets: [2, 3, 4],
+                    "width": "40px",
                 },
                 {
                     targets: 0,

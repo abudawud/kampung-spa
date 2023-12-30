@@ -27,7 +27,7 @@
                                 <a id="btn-create" href="{{ route('order-package.create') }}" class="btn btn-primary modal-remote"> <span
                                         class="fas fa-plus"></span></a>
                             @endcan
-                            
+
                             <a id="btn-reset" class="btn btn-default"> <span class="fas fa-sync"></span></a>
                         </div>
                     </div>
@@ -118,7 +118,7 @@
                     });
             });
 
-            
+
         });
     </script>
 @stop
