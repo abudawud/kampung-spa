@@ -19,7 +19,8 @@ class OrderItem extends BaseModel
         'item_id',
         'qty',
         'duration',
-        'price'
+        'price',
+        'total',
     ];
 
     public $visible = [

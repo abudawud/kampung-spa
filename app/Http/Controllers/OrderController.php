@@ -14,6 +14,7 @@ use App\Models\Customer;
 use App\Models\Reference;
 use App\Models\Site;
 use App\Models\Sys\Role;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Maatwebsite\Excel\Facades\Excel;
 
 class OrderController extends Controller
@@ -269,7 +270,7 @@ class OrderController extends Controller
         if ($order->packages->count() == 0 && $order->items->count() == 0) {
             abort(403, "Order belum memiliki item yang dipilih");
         }
-        $order->price = $order->items->sum('price') + $order->packages->sum('price');
+        $order->price = $order->items->sum('total') + $order->packages->sum('total');
         $order->invoice_total = $order->price + $order->transport;
         $order->status_id = Reference::ORDER_STATUS_PROSES_ID;
         $order->save();
@@ -278,6 +279,19 @@ class OrderController extends Controller
             'location' => route('order.show', $order)
         ];
     }
+
+    public function printInvoice(Order $order) {
+        $pdf = Pdf::loadView("order.export.invoice", [
+            "record" => $order,
+        ]);
+        $pdf->addInfo([
+            'Title' => "Material perintah packing - {$order->code}",
+            'Author' => config("app.company_name"),
+            'Subject' => "SIMBCAv3",
+        ]);
+        return $pdf->stream("Invoice Order - {$order->code}.pdf");
+    }
+
 
     public function export(Request $request)
     {

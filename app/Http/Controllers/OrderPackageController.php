@@ -233,9 +233,11 @@ class OrderPackageController extends Controller
 
     private function calculateData(FormRequest $request, Order $order, Package $package)
     {
+        $price = $package->guestPrice($order->customer);
         return [
             'duration' => $package->duration * $request->validated('qty'),
-            'price' => $package->guestPrice($order->customer) * $request->validated('qty'),
+            'price' => $price,
+            'total' => $price * $request->validated('qty'),
         ];
     }
 
@@ -252,7 +254,7 @@ class OrderPackageController extends Controller
                 'order_package_id' => $op->id,
                 'item_id' => $item->item_id,
                 'duration' => $totalDuration == 0 ? 0 : ($item->item->duration / $totalDuration) * $op->duration,
-                'price' => $totalPrice == 0 ? 0 : ($item->item->price / $totalPrice) * $op->price,
+                'total' => $totalPrice == 0 ? 0 : ($item->item->price / $totalPrice) * $op->price,
             ]);
         }
     }

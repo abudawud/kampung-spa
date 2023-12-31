@@ -19,7 +19,8 @@ class OrderPackage extends BaseModel
         'package_id',
         'qty',
         'duration',
-        'price'
+        'price',
+        'total',
     ];
 
     public $visible = [

@@ -33,6 +33,10 @@ class Order extends BaseModel
         'customer', 'terapis',
     ];
 
+    public $casts = [
+        'order_date' => 'date',
+    ];
+
     const VALIDATION_RULES = [
         'customer_id' => 'required',
         'order_date' => 'required|date:Y-m-d',

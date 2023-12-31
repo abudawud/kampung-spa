@@ -105,7 +105,7 @@
                         <a href='{{ route('order.process', $record) }}' class='btn btn-primary float-right modal-remote'><span class="fas fa-fw fa-play-circle"></span>
                             Proses Pesanan</a>
                     @else
-                        <a href='{{ route('order.print-invoice', $record) }}' class='btn btn-info float-right modal-remote'><span class="fas fa-fw fa-print"></span>
+                        <a target="_blank" href='{{ route('order.print-invoice', $record) }}' class='btn btn-info float-right'><span class="fas fa-fw fa-print"></span>
                             Cetak Invoice</a>
                     @endif
                 </div>

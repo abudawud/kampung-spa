@@ -64,8 +64,8 @@ class OrderItemController extends Controller
                     ];
 
                     if ($order->is_draft) {
-                        $user->can(OrderItemPolicy::POLICY_NAME . ".update") ? "<a href='" . route("order-item.edit", $record->id) . "' class='btn btn-xs btn-warning modal-remote' title='Edit'><i class='fas fa-pencil-alt'></i></a>" : '';
-                        $user->can(OrderItemPolicy::POLICY_NAME . ".delete") ? "<a href='" . route("order-item.destroy", $record->id) . "' class='btn btn-xs btn-danger btn-delete' title='Delete'><i class='fas fa-trash'></i></a>" : '';
+                        $actions[] = $user->can(OrderItemPolicy::POLICY_NAME . ".update") ? "<a href='" . route("order-item.edit", $record->id) . "' class='btn btn-xs btn-warning modal-remote' title='Edit'><i class='fas fa-pencil-alt'></i></a>" : '';
+                        $actions[] = $user->can(OrderItemPolicy::POLICY_NAME . ".delete") ? "<a href='" . route("order-item.destroy", $record->id) . "' class='btn btn-xs btn-danger btn-delete' title='Delete'><i class='fas fa-trash'></i></a>" : '';
                     }
 
                     return '<div class="btn-group">' . implode('', $actions) . '</div>';
@@ -227,9 +227,11 @@ class OrderItemController extends Controller
 
     private function calculateData(FormRequest $request, Order $order, Item $item)
     {
+        $price = $item->guestPrice($order->customer);
         return [
             'duration' => $item->duration * $request->validated('qty'),
-            'price' => $item->guestPrice($order->customer) * $request->validated('qty'),
+            'price' => $price,
+            'total' => $price * $request->validated('qty'),
         ];
     }
 
