@@ -8,6 +8,7 @@ use App\Http\Requests\StoreOrderPackageRequest;
 use App\Policies\OrderPackagePolicy;
 use App\Http\Controllers\Controller;
 use App\Models\Order;
+use App\Models\OrderPackageItem;
 use App\Models\Package;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Http\Request;
@@ -104,11 +105,14 @@ class OrderPackageController extends Controller
      */
     public function store(StoreOrderPackageRequest $request, Order $order)
     {
-        $package = Package::findOrFail($request->validated(['package_id']));
-        OrderPackage::create([
+        $package = Package::with('items.item')
+            ->whereHas('items')
+            ->findOrFail($request->validated(['package_id']));
+        $op = OrderPackage::create([
             'order_id' => $order->id,
             'created_by' => auth()->id()
         ] + $request->validated() + $this->calculateData($request, $order, $package));
+        $this->insertItems($op);
         if ($request->ajax()) {
             return [
                 'notification' => [
@@ -181,6 +185,8 @@ class OrderPackageController extends Controller
     public function update(UpdateOrderPackageRequest $request, OrderPackage $orderPackage)
     {
         $orderPackage->update($this->calculateData($request, $orderPackage->order, $orderPackage->package) +$request->validated());
+        $orderPackage->items()->delete();
+        $this->insertItems($orderPackage);
         if ($request->ajax()) {
             return [
                 'notification' => [
@@ -229,6 +235,24 @@ class OrderPackageController extends Controller
             'duration' => $package->duration * $request->validated('qty'),
             'price' => $package->guestPrice($order->customer) * $request->validated('qty'),
         ];
+    }
+
+    private function insertItems(OrderPackage $op) {
+        $order = $op->order;
+        $package = $op->package;
+        $totalPrice = $package->items->sum('item.normal_price');
+        if ($order->customer->is_member) {
+            $totalPrice = $package->items->sum('item.member_price');
+        }
+        $totalDuration = $package->items->sum('item.duration');
+        foreach ($package->items as $item) {
+            OrderPackageItem::create([
+                'order_package_id' => $op->id,
+                'item_id' => $item->item_id,
+                'duration' => $totalDuration == 0 ? 0 : ($item->item->duration / $totalDuration) * $op->duration,
+                'price' => $totalPrice == 0 ? 0 : ($item->item->price / $totalPrice) * $op->price,
+            ]);
+        }
     }
 
     private function formData()

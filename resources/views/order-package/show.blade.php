@@ -29,7 +29,7 @@
         </tr>
     </thead>
     <tbody>
-        @foreach ($record->package->items as $index => $item)
+        @foreach ($record->items as $index => $item)
         <tr>
             <td width="20px">{{ $index + 1 }}</td>
             <td>{{ $item->item->name }}</td>

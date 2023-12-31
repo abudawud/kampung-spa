@@ -47,4 +47,8 @@ class OrderPackage extends BaseModel
     public function package() {
         return $this->belongsTo(Package::class, 'package_id');
     }
+
+    public function items() {
+        return $this->hasMany(OrderPackageItem::class, 'order_package_id');
+    }
 }
