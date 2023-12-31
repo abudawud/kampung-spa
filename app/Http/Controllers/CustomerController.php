@@ -7,8 +7,11 @@ use App\Http\Requests\UpdateCustomerRequest;
 use App\Http\Requests\StoreCustomerRequest;
 use App\Policies\CustomerPolicy;
 use App\Http\Controllers\Controller;
+use App\Models\Order;
+use App\Models\Site;
 use App\Models\Sys\Role;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 
 class CustomerController extends Controller
 {
@@ -20,9 +23,6 @@ class CustomerController extends Controller
 
     protected function buildQuery()
     {
-        $user = auth()->user();
-        $employee = $user->employee;
-        $roles = $user->roles->pluck('name');
         $table = Customer::getTableName();
         $query = Customer::with('site')
             ->select([
@@ -30,9 +30,6 @@ class CustomerController extends Controller
                 "{$table}.name", "{$table}.instagram", "{$table}.birth_date",
                 "{$table}.no_hp", "{$table}.address", "{$table}.is_member"
             ]);
-        if (!$roles->contains(Role::ADMIN)) {
-            $query->where('site_id', $employee->site_id);
-        }
 
         return $query;
     }
@@ -113,7 +110,10 @@ class CustomerController extends Controller
      */
     public function store(StoreCustomerRequest $request)
     {
-        Customer::create(['created_by' => auth()->id()] + $request->validated());
+        $site = Site::findOrFail($request->validated('site_id'));
+        Customer::create([
+            'created_by' => auth()->id(),
+        ] + $request->validated());
         if ($request->ajax()) {
             return [
                 'notification' => [

@@ -58,12 +58,15 @@ class OrderItemController extends Controller
         $user = auth()->user();
         if ($request->ajax()) {
             return $this->buildDatatable($this->buildQuery()->where('order_id', $order->id))
-                ->addColumn('actions', function (OrderItem $record) use ($user) {
+                ->addColumn('actions', function (OrderItem $record) use ($user, $order) {
                     $actions = [
                         $user->can(OrderItemPolicy::POLICY_NAME . ".view") ? "<a href='" . route("order-item.show", $record->id) . "' class='btn btn-xs btn-primary modal-remote' title='Show'><i class='fas fa-eye'></i></a>" : '', // show
-                        $user->can(OrderItemPolicy::POLICY_NAME . ".update") ? "<a href='" . route("order-item.edit", $record->id) . "' class='btn btn-xs btn-warning modal-remote' title='Edit'><i class='fas fa-pencil-alt'></i></a>" : '', // edit
-                        $user->can(OrderItemPolicy::POLICY_NAME . ".delete") ? "<a href='" . route("order-item.destroy", $record->id) . "' class='btn btn-xs btn-danger btn-delete' title='Delete'><i class='fas fa-trash'></i></a>" : '', // delete
                     ];
+
+                    if ($order->is_draft) {
+                        $user->can(OrderItemPolicy::POLICY_NAME . ".update") ? "<a href='" . route("order-item.edit", $record->id) . "' class='btn btn-xs btn-warning modal-remote' title='Edit'><i class='fas fa-pencil-alt'></i></a>" : '';
+                        $user->can(OrderItemPolicy::POLICY_NAME . ".delete") ? "<a href='" . route("order-item.destroy", $record->id) . "' class='btn btn-xs btn-danger btn-delete' title='Delete'><i class='fas fa-trash'></i></a>" : '';
+                    }
 
                     return '<div class="btn-group">' . implode('', $actions) . '</div>';
                 })

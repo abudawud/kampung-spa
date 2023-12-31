@@ -18,7 +18,11 @@ Route::get('/', function () {
 });
 
 
+// custome route
 Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
+Route::get('/order/{order}/process', [App\Http\Controllers\OrderController::class, 'process'])->name('order.process');
+Route::post('/order/{order}/process', [App\Http\Controllers\OrderController::class, 'process'])->name('order.process');
+Route::get('/order/{order}/print-invoice', [App\Http\Controllers\OrderController::class, 'printInvoice'])->name('order.print-invoice');
 
 // export routes
 Route::get('/order/export', [App\Http\Controllers\OrderController::class, 'export'])->name('order.export');

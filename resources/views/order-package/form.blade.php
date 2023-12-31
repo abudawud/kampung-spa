@@ -25,6 +25,8 @@
                         length: 10,
                         "columns[0][data]": "name",
                         "columns[0][search][value]": params.term,
+                        "columns[1][data]": "site_id",
+                        "columns[1][search][value]": "{{ $order->customer->site_id }}",
                         "order[0][column]": 0,
                         "order[0][dir]": "asc",
                         "customer_id": $('#order-item-customer-id').val(),

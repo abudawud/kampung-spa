@@ -3,9 +3,11 @@
     <div class="card-body p-2">
         <div class="float-right">
             <div class="btn-group">
-                @can(App\Policies\OrderPackagePolicy::POLICY_NAME . '.create')
-                <a id="btn-create" href="{{ route('order.order-package.create', $record) }}" class="btn btn-primary modal-remote"> <span class="fas fa-plus"></span></a>
-                @endcan
+                @if ($record->is_draft)
+                    @can(App\Policies\OrderPackagePolicy::POLICY_NAME . '.create')
+                        <a id="btn-create" href="{{ route('order.order-package.create', $record) }}" class="btn btn-primary modal-remote"> <span class="fas fa-plus"></span></a>
+                    @endcan
+                @endif
                 <a id="btn-reset" class="btn btn-default"> <span class="fas fa-sync"></span></a>
             </div>
         </div>

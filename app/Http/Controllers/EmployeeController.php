@@ -7,8 +7,6 @@ use App\Http\Requests\UpdateEmployeeRequest;
 use App\Http\Requests\StoreEmployeeRequest;
 use App\Policies\EmployeePolicy;
 use App\Http\Controllers\Controller;
-use App\Models\Position;
-use App\Models\Sys\Role;
 use Illuminate\Http\Request;
 
 
@@ -22,9 +20,6 @@ class EmployeeController extends Controller
 
     protected function buildQuery()
     {
-        $user = auth()->user();
-        $employee = $user->employee;
-        $roles = $user->roles->pluck('name');
         $table = Employee::getTableName();
         $query = Employee::with(['position', 'site', 'sex'])->select([
             "{$table}.id", "{$table}.site_id", "{$table}.position_id",
@@ -33,11 +28,6 @@ class EmployeeController extends Controller
             "{$table}.weight", "{$table}.hire_at", "{$table}.address",
             "{$table}.is_active"
         ]);
-
-        if (!$roles->contains(Role::ADMIN)) {
-            $query->where('site_id', $employee->site_id);
-            $query->where('position_id', Position::TERAPIS_ID);
-        }
 
         return $query;
     }

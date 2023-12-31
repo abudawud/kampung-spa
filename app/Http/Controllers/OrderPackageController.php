@@ -22,13 +22,13 @@ class OrderPackageController extends Controller
         $this->authorizeResource(OrderPackage::class);
     }
 
-    protected function buildQuery()
+    protected function buildQuery(Order $order)
     {
         $table = OrderPackage::getTableName();
         return OrderPackage::select([
             "{$table}.id", "{$table}.order_id", "{$table}.package_id",
             "{$table}.qty", "{$table}.duration", "{$table}.price"
-        ])->with('package');
+        ])->where('order_id', $order->id)->with('package');
     }
 
     protected function buildDatatable($query)
@@ -42,9 +42,9 @@ class OrderPackageController extends Controller
         // });
     }
 
-    public function json()
+    public function json(Order $order)
     {
-        $query = $this->buildQuery()
+        $query = $this->buildQuery($order)
             ->limit(20);
         return $this->buildDatatable($query)->make(true);
     }
@@ -54,17 +54,19 @@ class OrderPackageController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index(Request $request)
+    public function index(Request $request, Order $order)
     {
         $user = auth()->user();
         if ($request->ajax()) {
-            return $this->buildDatatable($this->buildQuery())
-                ->addColumn('actions', function (OrderPackage $record) use ($user) {
+            return $this->buildDatatable($this->buildQuery($order))
+                ->addColumn('actions', function (OrderPackage $record) use ($user, $order) {
                     $actions = [
                         $user->can(OrderPackagePolicy::POLICY_NAME . ".view") ? "<a href='" . route("order-package.show", $record->id) . "' class='btn btn-xs btn-primary modal-remote' title='Show'><i class='fas fa-eye'></i></a>" : '', // show
-                        $user->can(OrderPackagePolicy::POLICY_NAME . ".update") ? "<a href='" . route("order-package.edit", $record->id) . "' class='btn btn-xs btn-warning modal-remote' title='Edit'><i class='fas fa-pencil-alt'></i></a>" : '', // edit
-                        $user->can(OrderPackagePolicy::POLICY_NAME . ".delete") ? "<a href='" . route("order-package.destroy", $record->id) . "' class='btn btn-xs btn-danger btn-delete' title='Delete'><i class='fas fa-trash'></i></a>" : '', // delete
                     ];
+                    if ($order->is_draft) {
+                        $actions[] = $user->can(OrderPackagePolicy::POLICY_NAME . ".update") ? "<a href='" . route("order-package.edit", $record->id) . "' class='btn btn-xs btn-warning modal-remote' title='Edit'><i class='fas fa-pencil-alt'></i></a>" : '';
+                        $actions[] = $user->can(OrderPackagePolicy::POLICY_NAME . ".delete") ? "<a href='" . route("order-package.destroy", $record->id) . "' class='btn btn-xs btn-danger btn-delete' title='Delete'><i class='fas fa-trash'></i></a>" : '';
+                    }
 
                     return '<div class="btn-group">' . implode('', $actions) . '</div>';
                 })

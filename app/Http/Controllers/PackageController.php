@@ -33,7 +33,10 @@ class PackageController extends Controller
 
     protected function buildDatatable($query)
     {
-        return datatables($query);
+        return datatables($query)
+            ->filterColumn('site_id', function($query, $keyword) {
+                $query->where('site_id', $keyword);
+            });
         // ->addColumn("firstCol", function (Package $record) {
         //   return $record->field;
         // })

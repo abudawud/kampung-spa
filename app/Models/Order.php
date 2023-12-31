@@ -19,13 +19,15 @@ class Order extends BaseModel
         'start_time', 'end_time', 'name',
         'terapis_id', 'price', 'transport',
         'invoice_total', 'cash', 'transfer',
-        'payment_total', 'description', 'created_by'
+        'payment_total', 'description', 'created_by',
+        'sec', 'status_id',
     ];
 
     public $visible = [
         'code', 'customer_id', 'order_date',
         'name', 'terapis_id', 'price',
         'transport', 'invoice_total', 'payment_total',
+        'status_id',
 
         // relation
         'customer', 'terapis',
@@ -34,8 +36,8 @@ class Order extends BaseModel
     const VALIDATION_RULES = [
         'customer_id' => 'required',
         'order_date' => 'required|date:Y-m-d',
-        'start_time' => 'required|regex:/^([01]\d|2[0-3]):([0-5]\d):([0-5]\d)$/i',
-        'end_time' => 'required|regex:/^([01]\d|2[0-3]):([0-5]\d):([0-5]\d)$/i',
+        'start_time' => 'required',
+        'end_time' => 'required',
         'name' => 'required',
         'terapis_id' => 'required',
         'transport' => 'required|integer',
@@ -43,6 +45,25 @@ class Order extends BaseModel
     ];
 
     const VALIDATION_MESSAGES = [];
+
+    public static function newCode($siteCode)
+    {
+        $prefix = "O{$siteCode}-" . date('ym');
+        $lastNo = static::where('code', 'like', "{$prefix}%")
+            ->latest('id');
+        $newNo = 1;
+        if ($lastNo->exists()) {
+            $newNo = hexdec(str_replace($prefix, "", $lastNo->first()->code));
+            $newNo += 1;
+        }
+        $newNo = dechex($newNo);
+
+        return $prefix . \Illuminate\Support\Str::padLeft($newNo, 4, 0);
+    }
+
+    public function getIsDraftAttribute() {
+        return $this->status_id == Reference::ORDER_STATUS_DRAFT_ID;
+    }
 
     public function customer()
     {
@@ -56,5 +77,13 @@ class Order extends BaseModel
 
     public function createdBy() {
         return $this->belongsTo(User::class, 'created_by');
+    }
+
+    public function packages() {
+        return $this->hasmany(OrderPackage::class, 'order_id');
+    }
+
+    public function items() {
+        return $this->hasmany(OrderItem::class, 'order_id');
     }
 }

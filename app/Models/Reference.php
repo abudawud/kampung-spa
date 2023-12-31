@@ -48,4 +48,8 @@ class Reference extends BaseModel
     const VALIDATION_MESSAGES = [
 
     ];
+
+    const ORDER_STATUS_DRAFT_ID = 3;
+    const ORDER_STATUS_PROSES_ID = 4;
+    const ORDER_STATUS_TERBAYAR_ID = 5;
 }

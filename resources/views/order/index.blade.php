@@ -2,6 +2,10 @@
 
 @section('title', 'Order')
 @section('plugins.Datatables', true)
+@section('plugins.Select2', true)
+@section('plugins.DateRangePicker', true)
+@section('plugins.TimePicker', true)
+@section('plugins.InputMask', true)
 
 @section('content_header')
     <h1 class="m-0 text-dark">Order</h1>
@@ -24,7 +28,7 @@
                     <div class="float-right">
                         <div class="btn-group">
                             @can(App\Policies\OrderPolicy::POLICY_NAME . '.create')
-                                <a id="btn-create" href="{{ route('order.create') }}" class="btn btn-primary "> <span
+                                <a id="btn-create" href="{{ route('order.create') }}" class="btn btn-primary modal-remote"> <span
                                         class="fas fa-plus"></span></a>
                             @endcan
                             <div class="btn-group">

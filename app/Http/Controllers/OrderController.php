@@ -8,7 +8,11 @@ use App\Http\Requests\StoreOrderRequest;
 use App\Policies\OrderPolicy;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 use App\Exports\OrderExport;
+use App\Models\Customer;
+use App\Models\Reference;
+use App\Models\Site;
 use App\Models\Sys\Role;
 use Maatwebsite\Excel\Facades\Excel;
 
@@ -30,13 +34,13 @@ class OrderController extends Controller
             "{$table}.id", "{$table}.code", "{$table}.customer_id",
             "{$table}.order_date", "{$table}.name", "{$table}.terapis_id",
             "{$table}.price", "{$table}.transport", "{$table}.invoice_total",
-            "{$table}.payment_total"
+            "{$table}.payment_total", "{$table}.status_id"
         ])->with([
             'customer', 'customer.site',
             'terapis',
         ]);
         if (!$roles->contains(Role::ADMIN)) {
-            $query->whereHas('customer', function($query) use ($employee) {
+            $query->whereHas('customer', function ($query) use ($employee) {
                 $query->where('site_id', $employee->site_id);
             });
             if ($roles->contains(Role::TERAPIS)) {
@@ -86,16 +90,16 @@ class OrderController extends Controller
 
                     return '<div class="btn-group">' . implode('', $actions) . '</div>';
                 })
-                ->editColumn('price', function($record) {
+                ->editColumn('price', function ($record) {
                     return number_format($record->price);
                 })
-                ->editColumn('transport', function($record) {
+                ->editColumn('transport', function ($record) {
                     return number_format($record->transport);
                 })
-                ->editColumn('invoice_total', function($record) {
+                ->editColumn('invoice_total', function ($record) {
                     return number_format($record->invoice_total);
                 })
-                ->editColumn('payment_total', function($record) {
+                ->editColumn('payment_total', function ($record) {
                     return number_format($record->payment_total);
                 })
                 ->rawColumns(['actions'])
@@ -134,16 +138,17 @@ class OrderController extends Controller
      */
     public function store(StoreOrderRequest $request)
     {
-        Order::create(['created_by' => auth()->id()] + $request->validated());
+        $site = Customer::findOrFail($request->validated('customer_id'))->site;
+        $order = Order::create([
+            'created_by' => auth()->id(),
+            'code' => Order::newCode($site->city_code),
+            'sec' => Str::random(15),
+            'status_id' => Reference::ORDER_STATUS_DRAFT_ID,
+        ] + $request->validated());
         if ($request->ajax()) {
             return [
-                'notification' => [
-                    'type' => "success",
-                    'title' => 'Tambah Order',
-                    'message' => 'Berhasil menambah Order',
-                ],
-                'code' => 200,
-                'message' => 'Success',
+                'status_code' => 302,
+                'location' => route('order.show', $order)
             ];
         } else {
             return redirect()->route("order.index")->with('notification', [
@@ -244,6 +249,35 @@ class OrderController extends Controller
         ];
     }
 
+    public function process(Request $request, Order $order) {
+        if ($request->isMethod('get')) {
+            $view = view('order.process', [
+                'record' => $order
+            ]);
+            return response()->json([
+                'title' => "Proses Pesanan",
+                'content' => $view->render(),
+                'footer' => '<button type="submit" class="btn btn-primary">Proses</button>',
+            ]);
+        } else {
+            return $this->processOrder($order);
+        }
+    }
+
+    private function processOrder(Order $order) {
+        $order->load(['packages', 'items']);
+        if ($order->packages->count() == 0 && $order->items->count() == 0) {
+            abort(403, "Order belum memiliki item yang dipilih");
+        }
+        $order->price = $order->items->sum('price') + $order->packages->sum('price');
+        $order->invoice_total = $order->price + $order->transport;
+        $order->status_id = Reference::ORDER_STATUS_PROSES_ID;
+        $order->save();
+        return [
+            'status_code' => 302,
+            'location' => route('order.show', $order)
+        ];
+    }
 
     public function export(Request $request)
     {
@@ -265,6 +299,9 @@ class OrderController extends Controller
 
     private function formData()
     {
-        return [];
+        $user = auth()->user();
+        return [
+            'sites' => $user->availableSites()->get()->pluck('city_name', 'id'),
+        ];
     }
 }
