@@ -1,12 +1,8 @@
 {!! Form::token() !!}
 <div class="row">
-    <div class="col-md-6 form-group">
-        {!! Form::label("site_id", "Site Id") !!}
-        {!! Form::text("site_id", $record?->site_id, ["class" => "form-control"]) !!}
-    </div>
-    <div class="col-md-6 form-group">
-        {!! Form::label("code", "Code") !!}
-        {!! Form::text("code", $record?->code, ["class" => "form-control"]) !!}
+    <div class="col-md-12 form-group">
+        {!! Form::label("site_id", "Site") !!}
+        {!! Form::select("site_id", $sites, $record?->site_id, ["class" => "form-control select2"]) !!}
     </div>
     <div class="col-md-6 form-group">
         {!! Form::label("name", "Name") !!}
@@ -18,24 +14,35 @@
     </div>
     <div class="col-md-6 form-group">
         {!! Form::label("birth_date", "Birth Date") !!}
-        {!! Form::text("birth_date", $record?->birth_date, ["class" => "form-control"]) !!}
+        {!! Form::text("birth_date", $record?->birth_date, ["class" => "form-control datepicker"]) !!}
     </div>
     <div class="col-md-6 form-group">
         {!! Form::label("no_hp", "No Hp") !!}
         {!! Form::text("no_hp", $record?->no_hp, ["class" => "form-control"]) !!}
     </div>
-    <div class="col-md-6 form-group">
+    <div class="col-md-12 form-group">
         {!! Form::label("address", "Address") !!}
-        {!! Form::text("address", $record?->address, ["class" => "form-control"]) !!}
+        {!! Form::textarea("address", $record?->address, ["class" => "form-control", "rows" => 5]) !!}
     </div>
     <div class="col-md-6 form-group">
-        {!! Form::label("is_member", "Is Member") !!}
-        {!! Form::text("is_member", $record?->is_member, ["class" => "form-control"]) !!}
+        {!! Form::hidden('is_member', 0) !!}
+        <div class="icheck-primary" title="Status">
+            {!! Form::checkbox('is_member', 1, $record?->is_member ?? 0, ['id' => 'is_member']) !!}
+            {!! Form::label('is_member', 'Status') !!}
+        </div>
     </div>
 </div>
 
 <script>
     jQuery(function($) {
-
+        $('select.select2').select2();
+        $('.datepicker').daterangepicker({
+            showDropdowns: true,
+            singleDatePicker: true,
+            autoApply: true,
+            locale: {
+                format: 'YYYY-MM-DD',
+            }
+        });
     });
 </script>

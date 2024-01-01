@@ -7,11 +7,8 @@ use App\Http\Requests\UpdateCustomerRequest;
 use App\Http\Requests\StoreCustomerRequest;
 use App\Policies\CustomerPolicy;
 use App\Http\Controllers\Controller;
-use App\Models\Order;
 use App\Models\Site;
-use App\Models\Sys\Role;
 use Illuminate\Http\Request;
-use Illuminate\Support\Str;
 
 class CustomerController extends Controller
 {
@@ -113,6 +110,7 @@ class CustomerController extends Controller
         $site = Site::findOrFail($request->validated('site_id'));
         Customer::create([
             'created_by' => auth()->id(),
+            'code' => Customer::newCode($site->city_code),
         ] + $request->validated());
         if ($request->ajax()) {
             return [
@@ -227,6 +225,9 @@ class CustomerController extends Controller
 
     private function formData()
     {
-        return [];
+        $user = auth()->user();
+        return [
+            'sites' => $user->availableSites()->get()->pluck('city_name', 'id'),
+        ];
     }
 }
