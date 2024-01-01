@@ -1,12 +1,12 @@
         <table class="table table-sm table-bordered table-stripped">
             <tbody>
                 <tr>
-                    <th width="30%">Site Id</th>
-                    <td>{{ $record->site_id }}</td>
+                    <th width="30%">Site</th>
+                    <td>{{ $record->site->city_name }}</td>
                 </tr>
                 <tr>
-                    <th width="30%">Position Id</th>
-                    <td>{{ $record->position_id }}</td>
+                    <th width="30%">Position</th>
+                    <td>{{ $record->position->name }}</td>
                 </tr>
                 <tr>
                     <th width="30%">Nip</th>
@@ -17,8 +17,12 @@
                     <td>{{ $record->name }}</td>
                 </tr>
                 <tr>
-                    <th width="30%">Sex Id</th>
-                    <td>{{ $record->sex_id }}</td>
+                    <th width="30%">Email</th>
+                    <td>{{ $record->email }}</td>
+                </tr>
+                <tr>
+                    <th width="30%">Sex</th>
+                    <td>{{ $record->sex->name }}</td>
                 </tr>
                 <tr>
                     <th width="30%">Dob</th>
@@ -45,8 +49,12 @@
                     <td>{{ $record->address }}</td>
                 </tr>
                 <tr>
-                    <th width="30%">Is Active</th>
-                    <td>{{ $record->is_active }}</td>
+                    <th width="30%">Terakhir Dirubah</th>
+                    <td>{{ $record->updated_at }}</td>
+                </tr>
+                <tr>
+                    <th width="30%">Active</th>
+                    <td>{!! $record->statusIcon !!}</td>
                 </tr>
             </tbody>
         </table>

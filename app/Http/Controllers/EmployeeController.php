@@ -7,8 +7,15 @@ use App\Http\Requests\UpdateEmployeeRequest;
 use App\Http\Requests\StoreEmployeeRequest;
 use App\Policies\EmployeePolicy;
 use App\Http\Controllers\Controller;
+use App\Models\Position;
+use App\Models\Reference;
+use App\Models\Site;
+use App\Models\Sys\Role;
+use App\Models\User;
 use Illuminate\Http\Request;
-
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\Rules\Password;
 
 class EmployeeController extends Controller
 {
@@ -108,7 +115,11 @@ class EmployeeController extends Controller
      */
     public function store(StoreEmployeeRequest $request)
     {
-        Employee::create(['created_by' => auth()->id()] + $request->validated());
+        $site = Site::findOrFail($request->validated('site_id'));
+        Employee::create([
+            'created_by' => auth()->id(),
+            'nip' => Employee::newCode($site->city_code),
+        ] + $request->validated());
         if ($request->ajax()) {
             return [
                 'notification' => [
@@ -138,9 +149,17 @@ class EmployeeController extends Controller
     {
         $view = view('employee.show', ['record' => $employee]);
         if ($request->ajax()) {
+            $accountLink = route('employee.account', $employee);
+            $haveUser = $employee->users()->count();
+            if ($haveUser) {
+                $label = "Ganti Password";
+            } else {
+                $label = "Buat Akun";
+            }
             return response()->json([
                 'title' => "Lihat Master Pegawai",
                 'content' => $view->render(),
+                'footer' => '<a href="' . $accountLink . '" class="btn btn-info modal-remote">' . $label . '</a>',
             ]);
         } else {
             return $view;
@@ -218,10 +237,75 @@ class EmployeeController extends Controller
         ];
     }
 
+    public function account(Request $request, Employee $employee)
+    {
+        if ($request->isMethod('get')) {
+            $view = view('employee.account', [
+                'record' => $employee
+            ]);
+            return response()->json([
+                'title' => "Pengaturan Account",
+                'content' => $view->render(),
+                'footer' => '<button type="submit" class="btn btn-primary">Simpan</button>',
+            ]);
+        } else {
+            return $this->saveAccount($request, $employee);
+        }
+    }
 
+    private function saveAccount(Request $request, Employee $employee)
+    {
+        $validated = Validator::make($request->all(), [
+            'password' => [
+                'required',
+                Password::min(8)->letters()->numbers(),
+            ]
+        ])->validate();
+        $haveUser = $employee->users()->count();
+        if ($haveUser) {
+            $employee->users()->update([
+                'password' => Hash::make($validated['password']),
+            ]);
+            return [
+                'notification' => [
+                    'type' => "success",
+                    'title' => 'Ganti Password',
+                    'message' => 'Berhasil mengganti password akun',
+                ],
+                'code' => 200,
+                'message' => 'Success',
+            ];
+        } else {
+            $user = User::create([
+                'employee_id' => $employee->id,
+                'name' => $employee->name,
+                'email' => $employee->email,
+                'password' => Hash::make($validated['password']),
+            ]);
+            if ($employee->position_id == Position::TERAPIS_ID) {
+                $user->assignRole(Role::TERAPIS);
+            } else if ($employee->position_id == Position::ADMIN_ID) {
+                $user->assignRole(Role::ADMIN);
+            }
+            return [
+                'notification' => [
+                    'type' => "success",
+                    'title' => 'Tambah Akun',
+                    'message' => 'Berhasil menambahkan akun',
+                ],
+                'code' => 200,
+                'message' => 'Success',
+            ];
+        }
+    }
 
     private function formData()
     {
-        return [];
+        $user = auth()->user();
+        return [
+            'sites' => $user->availableSites()->get()->pluck('city_name', 'id'),
+            'sexs' => Reference::byCat(Reference::SEX_CAT_ID)->orderBy('order')->pluck('name', 'id'),
+            'positions' => Position::active()->orderBy('id', 'desc')->pluck('name', 'id'),
+        ];
     }
 }

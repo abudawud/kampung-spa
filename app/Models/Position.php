@@ -11,6 +11,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 class Position extends BaseModel
 {
     use HasFactory;
+    const ADMIN_ID = 1;
     const TERAPIS_ID = 2;
 
     // overide default value

@@ -16,9 +16,9 @@
         {!! Form::label("no_hp", "No Hp") !!}
         {!! Form::text("no_hp", $record?->no_hp, ["class" => "form-control"]) !!}
     </div>
-    <div class="col-md-6 form-group">
+    <div class="col-md-12 form-group">
         {!! Form::label("address", "Address") !!}
-        {!! Form::text("address", $record?->address, ["class" => "form-control"]) !!}
+        {!! Form::textarea("address", $record?->address, ["class" => "form-control", "rows" => 5]) !!}
     </div>
 </div>
 

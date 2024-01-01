@@ -4,6 +4,7 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 use App\Models\Employee;
+use Illuminate\Validation\Rule;
 
 class UpdateEmployeeRequest extends FormRequest
 {
@@ -24,7 +25,13 @@ class UpdateEmployeeRequest extends FormRequest
      */
     public function rules()
     {
-        return Employee::VALIDATION_RULES;
+        return [
+            'email' => [
+                'required',
+                'email:rfc,dns',
+                Rule::unique(Employee::class, 'email')->ignore($this->employee->id),
+            ]
+        ] + Employee::VALIDATION_RULES;
     }
 
     public function messages()

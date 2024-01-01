@@ -15,34 +15,16 @@ class Employee extends BaseModel
     protected $table = "employee";
 
     public $fillable = [
-        'position_id',
-        'nip',
-        'name',
-        'no_hp',
-        'sex_id',
-        'dob',
-        'hire_at',
-        'height',
-        'weight',
-        'site_id',
-        'address',
-        'created_by',
-        'is_active'
+        'position_id', 'nip', 'name', 'no_hp',
+        'sex_id', 'dob', 'hire_at', 'height',
+        'weight', 'site_id', 'address', 'created_by',
+        'is_active', 'email',
     ];
 
     public $visible = [
-        'id',
-        'site_id',
-        'position_id',
-        'nip',
-        'name',
-        'sex_id',
-        'dob',
-        'no_hp',
-        'height',
-        'weight',
-        'hire_at',
-        'address',
+        'id', 'site_id', 'position_id', 'nip',
+        'name', 'sex_id', 'dob', 'no_hp',
+        'height', 'weight', 'hire_at', 'address',
         'is_active',
 
         'position', 'site', 'sex',
@@ -52,6 +34,7 @@ class Employee extends BaseModel
     const VALIDATION_RULES = [
         'position_id' => 'required',
         'name' => 'required',
+        'email' => 'required|email:rfc,dns|unique:'.self::class.',email',
         'no_hp' => 'required',
         'sex_id' => 'required',
         'dob' => 'required|date:Y-m-d',
@@ -64,6 +47,24 @@ class Employee extends BaseModel
     ];
 
     const VALIDATION_MESSAGES = [];
+
+    public static function newCode($siteCode)
+    {
+        $prefix = "E{$siteCode}-" . date('y');
+        $lastNo = static::where('nip', 'like', "{$prefix}%")
+            ->latest('id');
+        $newNo = 1;
+        if ($lastNo->exists()) {
+            $newNo = (int) str_replace($prefix, "", $lastNo->first()->code);
+            $newNo += 1;
+        }
+
+        return $prefix . \Illuminate\Support\Str::padLeft($newNo, 4, 0);
+    }
+
+    public function users() {
+        return $this->hasMany(User::class, 'employee_id');
+    }
 
     public function site() {
         return $this->belongsTo(Site::class, 'site_id');

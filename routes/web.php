@@ -23,6 +23,8 @@ Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name
 Route::get('/order/{order}/process', [App\Http\Controllers\OrderController::class, 'process'])->name('order.process');
 Route::post('/order/{order}/process', [App\Http\Controllers\OrderController::class, 'process'])->name('order.process');
 Route::get('/order/{order}/print-invoice', [App\Http\Controllers\OrderController::class, 'printInvoice'])->name('order.print-invoice');
+Route::get('/employee/{employee}/account', [App\Http\Controllers\EmployeeController::class, 'account'])->name('employee.account');
+Route::post('/employee/{employee}/account', [App\Http\Controllers\EmployeeController::class, 'account'])->name('employee.account');
 
 // export routes
 Route::get('/order/export', [App\Http\Controllers\OrderController::class, 'export'])->name('order.export');
