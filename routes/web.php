@@ -37,6 +37,7 @@ Route::get('/item/json', [App\Http\Controllers\ItemController::class, 'json'])->
 Route::get('/package/json', [App\Http\Controllers\PackageController::class, 'json'])->name('package.json');
 
 Route::resource('site', App\Http\Controllers\SiteController::class);
+Route::resource('site.site-bank', App\Http\Controllers\SiteBankController::class)->shallow();
 Route::resource('employee', App\Http\Controllers\EmployeeController::class);
 Route::resource('customer', App\Http\Controllers\CustomerController::class);
 Route::resource('item', App\Http\Controllers\ItemController::class);

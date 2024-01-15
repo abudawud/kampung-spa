@@ -86,8 +86,13 @@
         <li>
             Invoice ini merupakan faktur tagihan sekaligus bukti pembayaran yang sah, dan diterbitkan oleh Jemari Home Spa
         </li>
-        <li>Pembayaran bisa diberikan langsung kepada terapis kami (tunai) atau transfer melalui rekening <b>BCA a.n Acep
-                Dani : 7772554756</b></li>
+        <li>Pembayaran bisa diberikan langsung kepada terapis kami (tunai) atau transfer melalui salah satu rekening berikut:
+            <ul>
+                @foreach ($record->customer->site->activeBanks as $bank)
+                    <li><b>{{ $bank->bankType->name }}: {{ $bank->bank_no }}</b> An. {{ $bank->name }} </li>
+                @endforeach
+            </ul>
+        </li>
         <li>Harap mengirimkan bukti transfer kepada admin melalui whatsapp setelah melakukan pembayaran</li>
     </ul>
     <p>

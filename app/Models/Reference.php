@@ -56,6 +56,8 @@ class Reference extends BaseModel
     const ORDER_STATUS_PROSES_ID = 4;
     const ORDER_STATUS_TERBAYAR_ID = 5;
 
+    const BANK_TYPE_CID = 3;
+
     public function scopeByCat($query, $catId)
     {
         return $query->where([

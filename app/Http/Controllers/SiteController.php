@@ -60,8 +60,10 @@ class SiteController extends Controller
                       $user->can(SitePolicy::POLICY_NAME.".update") ? "<a href='" . route("site.edit", $record->id) . "' class='btn btn-xs btn-warning modal-remote' title='Edit'><i class='fas fa-pencil-alt'></i></a>" : '', // edit
                       $user->can(SitePolicy::POLICY_NAME.".delete") ? "<a data-title='Hapus Master Cabang' data-desc='Yakin ingin menghapus data cabang #" . $record->city_code . " ?' href='" . route("site.destroy", $record->id) . "' class='btn btn-xs btn-danger btn-delete' title='Delete'><i class='fas fa-trash'></i></a>" : '', // delete
                     ];
+                    $extraAction = [];
+                    $extraAction[] = "<a href='" . route("site.site-bank.index", $record->id) . "' class='btn btn-xs btn-secondary' title='Bank'><i class='fas fa-wallet'></i></a>";
 
-                    return '<div class="btn-group">' . implode('', $actions) . '</div>';
+                    return '<div class="btn-group mx-1">' . implode('', $extraAction) . '</div>' . '<div class="btn-group">' . implode('', $actions) . '</div>';
                 })
                 ->rawColumns(['actions'])
                 ->make(true);

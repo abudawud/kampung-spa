@@ -3,10 +3,9 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
-use App\Models\Employee;
-use Illuminate\Validation\Rule;
+use App\Models\SiteBank;
 
-class UpdateEmployeeRequest extends FormRequest
+class StoreSiteBankRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -25,16 +24,11 @@ class UpdateEmployeeRequest extends FormRequest
      */
     public function rules()
     {
-        return [
-            'email' => [
-                'required',
-                Rule::unique(Employee::class, 'email')->ignore($this->employee->id),
-            ]
-        ] + Employee::VALIDATION_RULES;
+        return SiteBank::VALIDATION_RULES;
     }
 
     public function messages()
     {
-        return Employee::VALIDATION_MESSAGES;
+        return SiteBank::VALIDATION_MESSAGES;
     }
 }

@@ -43,4 +43,13 @@ class Site extends BaseModel
     const VALIDATION_MESSAGES = [
 
     ];
+
+    public function banks() {
+        return $this->hasMany(SiteBank::class);
+    }
+
+    public function activeBanks() {
+        return $this->hasMany(SiteBank::class)
+            ->where('is_active', 1);
+    }
 }
