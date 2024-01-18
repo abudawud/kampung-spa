@@ -60,7 +60,7 @@
                                     <th class="text-primary">Name</th>
                                     <th class="text-primary">Terapis</th>
                                     <th class="text-primary">Price</th>
-                                    <th class="text-primary">Transport</th>
+                                    <th class="text-primary">Ongkos</th>
                                     <th class="text-primary">Invoice Total</th>
                                     <th class="text-primary">Payment Total</th>
                                     <th>Actions</th>
@@ -77,7 +77,7 @@
                                     <th class="filter">Name</th>
                                     <th class="filter">Terapis</th>
                                     <th class="filter">Price</th>
-                                    <th class="filter">Transport</th>
+                                    <th class="filter">Ongkos</th>
                                     <th class="filter">Invoice Total</th>
                                     <th class="filter">Payment Total</th>
                                     <th></th>
@@ -131,7 +131,7 @@
                 }, {
                     "data": "price"
                 }, {
-                    "data": "transport"
+                    "data": "terapis_price"
                 }, {
                     "data": "invoice_total"
                 }, {

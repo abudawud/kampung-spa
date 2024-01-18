@@ -20,17 +20,20 @@ class Order extends BaseModel
         'terapis_id', 'price', 'transport',
         'invoice_total', 'cash', 'transfer',
         'payment_total', 'description', 'created_by',
-        'sec', 'status_id',
+        'sec', 'status_id', 'ex_night',
     ];
 
     public $visible = [
         'code', 'customer_id', 'order_date',
         'name', 'terapis_id', 'price',
         'transport', 'invoice_total', 'payment_total',
-        'status_id',
+        'status_id', 'ex_night',
 
         // relation
         'customer', 'terapis',
+
+        // raw column
+        'terapis_price',
     ];
 
     public $casts = [
@@ -45,6 +48,7 @@ class Order extends BaseModel
         'name' => 'required',
         'terapis_id' => 'required',
         'transport' => 'required|integer',
+        'ex_night' => 'required|integer',
         'description' => 'nullable',
     ];
 

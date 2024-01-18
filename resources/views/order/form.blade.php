@@ -24,11 +24,15 @@
         {!! Form::label("transport", "Transport") !!}
         {!! Form::text("transport", $record?->transport, ["class" => "form-control money"]) !!}
     </div>
-    <div class="col-md-3 form-group">
+    <div class="col-md-6 form-group">
+        {!! Form::label("ex_night", "Eks. Malam") !!}
+        {!! Form::text("ex_night", $record?->ex_night, ["class" => "form-control money"]) !!}
+    </div>
+    <div class="col-md-6 form-group">
         {!! Form::label("start_time", "Start Time") !!}
         {!! Form::text("start_time", $record?->start_time, ["class" => "form-control timepicker"]) !!}
     </div>
-    <div class="col-md-3 form-group">
+    <div class="col-md-6 form-group">
         {!! Form::label("end_time", "End Time") !!}
         {!! Form::text("end_time", $record?->end_time, ["class" => "form-control timepicker"]) !!}
     </div>

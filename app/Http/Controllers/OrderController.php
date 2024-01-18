@@ -15,6 +15,7 @@ use App\Models\Reference;
 use App\Models\Site;
 use App\Models\Sys\Role;
 use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Support\Facades\DB;
 use Maatwebsite\Excel\Facades\Excel;
 
 class OrderController extends Controller
@@ -35,7 +36,11 @@ class OrderController extends Controller
             "{$table}.id", "{$table}.code", "{$table}.customer_id",
             "{$table}.order_date", "{$table}.name", "{$table}.terapis_id",
             "{$table}.price", "{$table}.transport", "{$table}.invoice_total",
-            "{$table}.payment_total", "{$table}.status_id"
+            "{$table}.payment_total", "{$table}.status_id",
+            "{$table}.ex_night",
+
+            // raw column
+            DB::raw('(transport + ex_night) terapis_price')
         ])->with([
             'customer', 'customer.site',
             'terapis',
