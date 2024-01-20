@@ -20,17 +20,19 @@ class Order extends BaseModel
         'terapis_id', 'price', 'transport',
         'invoice_total', 'cash', 'transfer',
         'payment_total', 'description', 'created_by',
-        'sec', 'status_id', 'ex_night',
+        'sec', 'status_id', 'ex_night', 'site_id',
+        'site_bank_id',
     ];
 
     public $visible = [
         'code', 'customer_id', 'order_date',
         'name', 'terapis_id', 'price',
         'transport', 'invoice_total', 'payment_total',
-        'status_id', 'ex_night',
+        'status_id', 'ex_night', 'site_id',
 
         // relation
         'customer', 'terapis',
+        'site',
 
         // raw column
         'terapis_price',
@@ -41,6 +43,7 @@ class Order extends BaseModel
     ];
 
     const VALIDATION_RULES = [
+        'site_id' => 'required',
         'customer_id' => 'required',
         'order_date' => 'required|date:Y-m-d',
         'start_time' => 'required',
@@ -69,13 +72,31 @@ class Order extends BaseModel
         return $prefix . \Illuminate\Support\Str::padLeft($newNo, 4, 0);
     }
 
+    public function updateInvoice() {
+        $this->price = $this->items->sum('total') + $this->packages->sum('total');
+        $this->invoice_total = $this->price + $this->transport + $this->ex_night;
+        $this->save();
+    }
+
     public function getIsDraftAttribute() {
         return $this->status_id == Reference::ORDER_STATUS_DRAFT_ID;
+    }
+
+    public function getIsPaidAttribute() {
+        return $this->status_id == Reference::ORDER_STATUS_TERBAYAR_ID;
+    }
+
+    public function getIsProcessAttribute() {
+        return $this->status_id == Reference::ORDER_STATUS_PROSES_ID;
     }
 
     public function customer()
     {
         return $this->belongsTo(Customer::class, 'customer_id');
+    }
+
+    public function site() {
+        return $this->belongsTo(Site::class, 'site_id');
     }
 
     public function terapis()

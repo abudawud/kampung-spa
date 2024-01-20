@@ -118,7 +118,7 @@
                 columns: [{
                     "data": "id"
                 }, {
-                    "data": "customer.site.city_code",
+                    "data": "site.city_code",
                     "width": "50px",
                 }, {
                     "data": "customer.name"

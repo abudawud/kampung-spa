@@ -45,4 +45,8 @@ class SiteBank extends BaseModel
     public function bankType() {
         return $this->belongsTo(Reference::class, 'bank_type_id');
     }
+
+    public function getLongNameAttribute() {
+        return "{$this->bankType->name} | {$this->name}";
+    }
 }

@@ -63,7 +63,7 @@ class OrderItemController extends Controller
                         $user->can(OrderItemPolicy::POLICY_NAME . ".view") ? "<a href='" . route("order-item.show", $record->id) . "' class='btn btn-xs btn-primary modal-remote' title='Show'><i class='fas fa-eye'></i></a>" : '', // show
                     ];
 
-                    if ($order->is_draft) {
+                    if (!$order->is_paid) {
                         $actions[] = $user->can(OrderItemPolicy::POLICY_NAME . ".update") ? "<a href='" . route("order-item.edit", $record->id) . "' class='btn btn-xs btn-warning modal-remote' title='Edit'><i class='fas fa-pencil-alt'></i></a>" : '';
                         $actions[] = $user->can(OrderItemPolicy::POLICY_NAME . ".delete") ? "<a href='" . route("order-item.destroy", $record->id) . "' class='btn btn-xs btn-danger btn-delete' title='Delete'><i class='fas fa-trash'></i></a>" : '';
                     }
@@ -112,6 +112,7 @@ class OrderItemController extends Controller
             'created_by' => auth()->id(),
             'order_id' => $order->id,
         ] + $request->validated() + $this->calculateData($request, $order, $item));
+        $order->updateInvoice();
         if ($request->ajax()) {
             return [
                 'notification' => [
@@ -120,6 +121,8 @@ class OrderItemController extends Controller
                     'message' => 'Berhasil menambah Order Item',
                 ],
                 'datatableId' => '#datatable-item',
+                'callback_function' => 'updateBiaya',
+                'callback_data' => $order,
                 'code' => 200,
                 'message' => 'Success',
             ];
@@ -184,6 +187,7 @@ class OrderItemController extends Controller
     public function update(UpdateOrderItemRequest $request, OrderItem $orderItem)
     {
         $orderItem->update($this->calculateData($request, $orderItem->order, $orderItem->item) + $request->validated());
+        $orderItem->order->updateInvoice();
         if ($request->ajax()) {
             return [
                 'notification' => [
@@ -192,6 +196,8 @@ class OrderItemController extends Controller
                     'message' => 'Berhasil merubah Order Item',
                 ],
                 'datatableId' => '#datatable-item',
+                'callback_function' => 'updateBiaya',
+                'callback_data' => $orderItem->order,
                 'code' => 200,
                 'message' => 'Success',
             ];
@@ -212,7 +218,9 @@ class OrderItemController extends Controller
      */
     public function destroy(OrderItem $orderItem)
     {
+        $order = $orderItem->order;
         $orderItem->delete();
+        $order->updateInvoice();
         return [
             'notification' => [
                 'type' => "success",
@@ -220,6 +228,8 @@ class OrderItemController extends Controller
                 'message' => 'Berhasil menghapus Order Item',
             ],
             'datatableId' => '#datatable-item',
+            'callback_function' => 'updateBiaya',
+            'callback_data' => $order,
             'code' => 200,
             'message' => 'Success',
         ];

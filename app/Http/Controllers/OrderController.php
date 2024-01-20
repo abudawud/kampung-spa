@@ -13,9 +13,12 @@ use App\Exports\OrderExport;
 use App\Models\Customer;
 use App\Models\Reference;
 use App\Models\Site;
+use App\Models\SiteBank;
 use App\Models\Sys\Role;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\Rule;
 use Maatwebsite\Excel\Facades\Excel;
 
 class OrderController extends Controller
@@ -37,13 +40,13 @@ class OrderController extends Controller
             "{$table}.order_date", "{$table}.name", "{$table}.terapis_id",
             "{$table}.price", "{$table}.transport", "{$table}.invoice_total",
             "{$table}.payment_total", "{$table}.status_id",
-            "{$table}.ex_night",
+            "{$table}.ex_night", "{$table}.site_id",
 
             // raw column
             DB::raw('(transport + ex_night) terapis_price')
         ])->with([
             'customer', 'customer.site',
-            'terapis',
+            'terapis', 'site',
         ]);
         if (!$roles->contains(Role::ADMIN)) {
             $query->whereHas('customer', function ($query) use ($employee) {
@@ -255,7 +258,8 @@ class OrderController extends Controller
         ];
     }
 
-    public function process(Request $request, Order $order) {
+    public function process(Request $request, Order $order)
+    {
         if ($request->isMethod('get')) {
             $view = view('order.process', [
                 'record' => $order
@@ -270,13 +274,61 @@ class OrderController extends Controller
         }
     }
 
-    private function processOrder(Order $order) {
+    public function payment(Request $request, Order $order)
+    {
+        if ($request->isMethod('get')) {
+            $view = view('order.payment', [
+                'record' => $order,
+                'banks' => $order->site->activeBanks->pluck('long_name', 'id'),
+            ]);
+            return response()->json([
+                'title' => "Pelunasan #" . $order->code,
+                'content' => $view->render(),
+                'footer' => '<button type="submit" class="btn btn-primary">Simpan</button>',
+            ]);
+        } else {
+            return $this->payOrder($request, $order);
+        }
+    }
+
+    private function payOrder(Request $request, Order $order)
+    {
+        $data = Validator::make($request->all(), [
+            'cash' => 'required|integer|gte:0',
+            'transfer' => 'required|integer|gte:0',
+            'site_bank_id' => [
+                'nullable',
+                Rule::exists(SiteBank::class, 'id')->where('site_id', $order->site_id),
+            ],
+        ])->validate();
+        if ($data['transfer'] > 0) {
+            if (empty($data['site_bank_id'])) {
+                abort(403, "Bank tujuan wajib dipilih");
+            }
+        }
+        $totalPayment = $data['cash'] + $data['transfer'];
+        if ($totalPayment < $order->invoice_total) {
+            abort(403, "Nilai pembayaran kurang dari tagihan");
+        }
+
+        $order->update($data + [
+            'status_id' => Reference::ORDER_STATUS_TERBAYAR_ID,
+            'payment_total' => $totalPayment,
+        ]);
+
+        return [
+            'status_code' => 302,
+            'location' => route('order.show', $order)
+        ];
+    }
+
+    private function processOrder(Order $order)
+    {
         $order->load(['packages', 'items']);
         if ($order->packages->count() == 0 && $order->items->count() == 0) {
             abort(403, "Order belum memiliki item yang dipilih");
         }
-        $order->price = $order->items->sum('total') + $order->packages->sum('total');
-        $order->invoice_total = $order->price + $order->transport;
+        $order->updateInvoice();
         $order->status_id = Reference::ORDER_STATUS_PROSES_ID;
         $order->save();
         return [
@@ -285,12 +337,13 @@ class OrderController extends Controller
         ];
     }
 
-    public function printInvoice(Order $order) {
+    public function printInvoice(Order $order)
+    {
         $pdf = Pdf::loadView("order.export.invoice", [
             "record" => $order,
         ]);
         $pdf->addInfo([
-            'Title' => "Material perintah packing - {$order->code}",
+            'Title' => "Invoice Order - {$order->code}",
             'Author' => config("app.company_name"),
             'Subject' => "SIMBCAv3",
         ]);

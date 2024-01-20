@@ -3,7 +3,7 @@
     <div class="card-body p-2">
         <div class="float-right">
             <div class="btn-group">
-                @if ($record->is_draft)
+                @if (!$record->is_paid)
                     @can(App\Policies\OrderItemPolicy::POLICY_NAME . '.create')
                     <a id="btn-create" href="{{ route('order.order-item.create', $record) }}" class="btn btn-primary modal-remote"> <span class="fas fa-plus"></span></a>
                     @endcan
@@ -116,8 +116,6 @@
                     });
                 });
         });
-
-
     });
 </script>
 @endpush

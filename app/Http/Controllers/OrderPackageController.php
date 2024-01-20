@@ -63,7 +63,7 @@ class OrderPackageController extends Controller
                     $actions = [
                         $user->can(OrderPackagePolicy::POLICY_NAME . ".view") ? "<a href='" . route("order-package.show", $record->id) . "' class='btn btn-xs btn-primary modal-remote' title='Show'><i class='fas fa-eye'></i></a>" : '', // show
                     ];
-                    if ($order->is_draft) {
+                    if (!$order->is_paid) {
                         $actions[] = $user->can(OrderPackagePolicy::POLICY_NAME . ".update") ? "<a href='" . route("order-package.edit", $record->id) . "' class='btn btn-xs btn-warning modal-remote' title='Edit'><i class='fas fa-pencil-alt'></i></a>" : '';
                         $actions[] = $user->can(OrderPackagePolicy::POLICY_NAME . ".delete") ? "<a href='" . route("order-package.destroy", $record->id) . "' class='btn btn-xs btn-danger btn-delete' title='Delete'><i class='fas fa-trash'></i></a>" : '';
                     }
@@ -115,6 +115,7 @@ class OrderPackageController extends Controller
             'created_by' => auth()->id()
         ] + $request->validated() + $this->calculateData($request, $order, $package));
         $this->insertItems($op);
+        $order->updateInvoice();
         if ($request->ajax()) {
             return [
                 'notification' => [
@@ -123,6 +124,8 @@ class OrderPackageController extends Controller
                     'message' => 'Berhasil menambah Order Package',
                 ],
                 'datatableId' => '#datatable-package',
+                'callback_function' => 'updateBiaya',
+                'callback_data' => $order,
                 'code' => 200,
                 'message' => 'Success',
             ];
@@ -186,9 +189,11 @@ class OrderPackageController extends Controller
      */
     public function update(UpdateOrderPackageRequest $request, OrderPackage $orderPackage)
     {
+        $order = $orderPackage->order;
         $orderPackage->update($this->calculateData($request, $orderPackage->order, $orderPackage->package) +$request->validated());
         $orderPackage->items()->delete();
         $this->insertItems($orderPackage);
+        $order->updateInvoice();
         if ($request->ajax()) {
             return [
                 'notification' => [
@@ -197,6 +202,8 @@ class OrderPackageController extends Controller
                     'message' => 'Berhasil merubah Order Package',
                 ],
                 'datatableId' => '#datatable-package',
+                'callback_function' => 'updateBiaya',
+                'callback_data' => $order,
                 'code' => 200,
                 'message' => 'Success',
             ];
@@ -217,7 +224,9 @@ class OrderPackageController extends Controller
      */
     public function destroy(OrderPackage $orderPackage)
     {
+        $order = $orderPackage->order;
         $orderPackage->delete();
+        $order->updateInvoice();
         return [
             'notification' => [
                 'type' => "success",
@@ -225,6 +234,8 @@ class OrderPackageController extends Controller
                 'message' => 'Berhasil menghapus Order Package',
             ],
             'datatableId' => '#datatable-package',
+            'callback_function' => 'updateBiaya',
+            'callback_data' => $order,
             'code' => 200,
             'message' => 'Success',
         ];

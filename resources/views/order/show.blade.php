@@ -2,6 +2,7 @@
 
 @section('plugins.Datatables', true)
 @section('plugins.Select2', true)
+@section('plugins.InputMask', true)
 @section('title', 'Detail Order #' . $record->code)
 @section('content_header')
     <h1 class="m-0 text-dark">Detail Order #{{ $record->code }}</h1>
@@ -28,7 +29,8 @@
                                         <tr>
                                             <th>Customer</th>
                                             <td>{{ $record->customer->name }}
-                                                <i>({{ $record->customer->is_member ? 'Member' : 'Non-Member' }})</i></td>
+                                                <i>({{ $record->customer->is_member ? 'Member' : 'Non-Member' }})</i>
+                                            </td>
                                         </tr>
                                         <tr>
                                             <th>Tanggal Pesan</th>
@@ -58,35 +60,37 @@
                                             <th>Terakhir dirubah</th>
                                             <td>{{ $record->updated_at }}</td>
                                         </tr>
-                                        @if (!$record->is_draft)
-                                            <tr>
-                                                <td colspan="2" class="bg-secondary">Rincian Biaya</td>
-                                            </tr>
-                                            <tr>
-                                                <th>Harga</th>
-                                                <td>{{ $record->price }}</td>
-                                            </tr>
-                                            <tr>
-                                                <th>Transport</th>
-                                                <td>{{ $record->transport }}</td>
-                                            </tr>
-                                            <tr class="bg-light">
-                                                <th>Total Tagihan</th>
-                                                <td>{{ $record->invoice_total }}</td>
-                                            </tr>
-                                            <tr>
-                                                <th>Cash</th>
-                                                <td>{{ $record->cash }}</td>
-                                            </tr>
-                                            <tr>
-                                                <th>Transfer</th>
-                                                <td>{{ $record->transfer }}</td>
-                                            </tr>
-                                            <tr class="bg-light">
-                                                <th>Total Pembayaran</th>
-                                                <td>{{ $record->payment_total }}</td>
-                                            </tr>
-                                        @endif
+                                        <tr>
+                                            <td colspan="2" class="bg-secondary">Rincian Biaya</td>
+                                        </tr>
+                                        <tr>
+                                            <th>Harga</th>
+                                            <td id="info-price">{{ $record->price }}</td>
+                                        </tr>
+                                        <tr>
+                                            <th>Transport</th>
+                                            <td id="info-transport">{{ $record->transport }}</td>
+                                        </tr>
+                                        <tr>
+                                            <th>Eks. Malam</th>
+                                            <td id="info-ex-night">{{ $record->ex_night }}</td>
+                                        </tr>
+                                        <tr class="bg-light">
+                                            <th>Total Tagihan</th>
+                                            <td id="info-invoice-total">{{ $record->invoice_total }}</td>
+                                        </tr>
+                                        <tr>
+                                            <th>Cash</th>
+                                            <td id="info-cash">{{ $record->cash }}</td>
+                                        </tr>
+                                        <tr>
+                                            <th>Transfer</th>
+                                            <td id="info-transfer">{{ $record->transfer }}</td>
+                                        </tr>
+                                        <tr class="bg-light">
+                                            <th>Total Pembayaran</th>
+                                            <td id="info-payment-total">{{ $record->payment_total }}</td>
+                                        </tr>
                                     </tbody>
                                 </table>
                             </div>
@@ -102,15 +106,35 @@
                 <div class="card-footer">
                     <a href='{{ route('order.index') }}' class='btn btn-secondary'>Kembali</a>
                     @if ($record->is_draft)
-                        <a href='{{ route('order.process', $record) }}' class='btn btn-primary float-right modal-remote'><span class="fas fa-fw fa-play-circle"></span>
+                        <a href='{{ route('order.process', $record) }}'
+                            class='btn btn-primary float-right modal-remote'><span class="fas fa-fw fa-play-circle"></span>
                             Proses Pesanan</a>
                     @else
-                        <a target="_blank" href='{{ route('order.print-invoice', $record) }}' class='btn btn-info float-right'><span class="fas fa-fw fa-print"></span>
+                        <a target="_blank" href='{{ route('order.print-invoice', $record) }}'
+                            class='btn btn-info float-right'><span class="fas fa-fw fa-print"></span>
                             Cetak Invoice</a>
+                    @endif
+                    @if ($record->is_process)
+                        <a href='{{ route('order.payment', $record) }}'
+                            class='btn btn-success float-right mr-2 modal-remote'><span class="fas fa-fw fa-money-bill"></span>
+                            Pelunasan</a>
                     @endif
                 </div>
             </div>
         </div>
     </div>
     <x-alcrud-modal title="Master Cabang" tableId="#datatable" />
+@stop
+@section('js')
+    <script>
+        function updateBiaya(order) {
+            $('#info-price').text(order.price);
+            $('#info-transport').text(order.transport);
+            $('#info-ex-night').text(order.ex_night);
+            $('#info-invoice-total').text(order.invoice_total);
+            $('#info-cash').text(order.cash);
+            $('#info-transfer').text(order.transfer);
+            $('#info-payment-total').text(order.payment_total);
+        }
+    </script>
 @stop
