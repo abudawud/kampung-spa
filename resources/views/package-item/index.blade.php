@@ -3,6 +3,7 @@
 @section('title', 'Package Detail')
 @section('plugins.Datatables', true)
 @section('plugins.Select2', true)
+@section('plugins.InputMask', true)
 
 @section('content_header')
 <h1 class="m-0 text-dark">Package Detail</h1>
@@ -19,7 +20,14 @@
 <div class="row">
     <div class="col-12">
         <div class="card mb-0">
-            <h5 class="card-header bg-primary"><span class="fas fa-file-alt"></span> Data Package Detail</h5>
+            <div class="card-header bg-primary py-2 pr-2">
+                <div class="float-right">
+                    <div class="btn-group">
+                        <a id="btn-create" href="{{ route('package.update-harga', $package) }}" class="btn btn-light modal-remote"> <span class="fas fa-edit"></span> Update Harga</a>
+                    </div>
+                </div>
+                <h5 class="mt-2"><span class="fas fa-file-alt"></span> Data Package</h5>
+            </div>
             <div class="card-body p-2">
                 <div class="row">
                     <div class="col-12">
@@ -44,11 +52,11 @@
                                     </tr>
                                     <tr>
                                         <th>Normal Price</th>
-                                        <td>{{ $package->normal_price }}</td>
+                                        <td id="info-normal-price">{{ number_format($package->normal_price) }}</td>
                                     </tr>
                                     <tr>
                                         <th>Member Price</th>
-                                        <td>{{ $package->member_price }}</td>
+                                        <td id="info-member-price">{{ number_format($package->member_price) }}</td>
                                     </tr>
                                     <tr>
                                         <th>Launch At</th>
@@ -87,6 +95,8 @@
                                             <tr>
                                                 <th>Id</th>
                                                 <th class="text-primary">Item</th>
+                                                <th class="text-primary">Normal Price</th>
+                                                <th class="text-primary">Member Price</th>
                                                 <th>Actions</th>
                                             </tr>
                                         </thead>
@@ -96,6 +106,14 @@
                                             <tr class="filter">
                                                 <th></th>
                                                 <th class="filter">Item</th>
+                                                <th class="filter">Normal Price</th>
+                                                <th class="filter">Member Price</th>
+                                                <th></th>
+                                            </tr>
+                                            <tr class="bg-light">
+                                                <th colspan="2" class="text-center">Total</th>
+                                                <th class="text-right" id="total-normal-price"></th>
+                                                <th class="text-right" id="total-member-price"></th>
                                                 <th></th>
                                             </tr>
                                         </tfoot>
@@ -118,6 +136,11 @@
 
 @section('js')
 <script>
+    function updateHarga(package) {
+        console.log(package);
+        $('#info-normal-price').text(parseInt(package.normal_price).toLocaleString());
+        $('#info-member-price').text(parseInt(package.member_price).toLocaleString());
+    }
     $(document).ready(function() {
         // add search and exclude first and last column
         $('#datatable tfoot tr.filter th.filter').each(function() {
@@ -132,7 +155,14 @@
             dom: dom,
             processing: true,
             serverSide: true,
-            ajax: "{{ route('package.package-item.index', $package) }}",
+            ajax: {
+                url: "{{ route('package.package-item.index', $package) }}",
+                dataSrc: function(json) {
+                    $('#total-normal-price').html(json.total.normal_price);
+                    $('#total-member-price').html(json.total.member_price);
+                    return json.data;
+                }
+            },
             pageLength: 25,
             colReorder: true,
             order: [
@@ -142,6 +172,12 @@
                 "data": "id"
             }, {
                 "data": "item.name"
+            }, {
+                "data": "item.normal_price",
+                "class": "text-right"
+            }, {
+                "data": "item.member_price",
+                "class": "text-right"
             }, {
                 "data": "actions",
                 "width": "50px",

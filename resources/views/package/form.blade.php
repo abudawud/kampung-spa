@@ -14,11 +14,11 @@
     </div>
     <div class="col-md-6 form-group">
         {!! Form::label("normal_price", "Normal Price") !!}
-        {!! Form::text("normal_price", $record?->normal_price, ["class" => "form-control money"]) !!}
+        {!! Form::text("normal_price", $record?->normal_price ?? 0, ["class" => "form-control money"]) !!}
     </div>
     <div class="col-md-6 form-group">
         {!! Form::label("member_price", "Member Price") !!}
-        {!! Form::text("member_price", $record?->member_price, ["class" => "form-control money"]) !!}
+        {!! Form::text("member_price", $record?->member_price ?? 0, ["class" => "form-control money"]) !!}
     </div>
     <div class="col-md-6 form-group">
         {!! Form::label("launch_at", "Launch At") !!}

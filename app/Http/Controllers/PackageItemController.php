@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Helpers\Currency;
 use App\Models\PackageItem;
 use App\Http\Requests\UpdatePackageItemRequest;
 use App\Http\Requests\StorePackageItemRequest;
@@ -9,7 +10,8 @@ use App\Policies\PackageItemPolicy;
 use App\Http\Controllers\Controller;
 use App\Models\Package;
 use Illuminate\Http\Request;
-
+use Illuminate\Support\Arr;
+use Illuminate\Support\Facades\DB;
 
 class PackageItemController extends Controller
 {
@@ -19,12 +21,13 @@ class PackageItemController extends Controller
         $this->authorizeResource(PackageItem::class);
     }
 
-    protected function buildQuery()
+    protected function buildQuery(Package $package)
     {
         $table = PackageItem::getTableName();
         return PackageItem::select([
             "{$table}.id", "{$table}.package_id", "{$table}.item_id"
-        ])->with('item');
+        ])->with('item')
+            ->where('package_id', $package->id);
     }
 
     protected function buildDatatable($query)
@@ -38,9 +41,9 @@ class PackageItemController extends Controller
         // });
     }
 
-    public function json()
+    public function json(Package $package)
     {
-        $query = $this->buildQuery()
+        $query = $this->buildQuery($package)
             ->limit(20);
         return $this->buildDatatable($query)->make(true);
     }
@@ -54,13 +57,32 @@ class PackageItemController extends Controller
     {
         $user = auth()->user();
         if ($request->ajax()) {
-            return $this->buildDatatable($this->buildQuery())
+            return $this->buildDatatable($this->buildQuery($package))
                 ->addColumn('actions', function (PackageItem $record) use ($user) {
                     $actions = [
                         $user->can(PackageItemPolicy::POLICY_NAME . ".delete") ? "<a href='" . route("package-item.destroy", $record->id) . "' class='btn btn-xs btn-danger btn-delete' title='Delete'><i class='fas fa-trash'></i></a>" : '', // delete
                     ];
 
                     return '<div class="btn-group">' . implode('', $actions) . '</div>';
+                })
+                ->editColumn('item.normal_price', function($record) {
+                    return Currency::format($record->item->normal_price);
+                })
+                ->editColumn('item.member_price', function($record) {
+                    return Currency::format($record->item->member_price);
+                })
+                ->withQuery('total', function ($query) {
+                    $query->limit = null;
+                    $query->offset = null;
+                    $data = $query->get()->groupBy('package_id')->map(function($record) {
+                        return [
+                            'normal_price' => $record->sum('item.normal_price'),
+                            'member_price' => $record->sum('item.member_price'),
+                        ];
+                    })->first();
+                    return Arr::map((array) $data, function ($value, $key) {
+                        return Currency::format($value);
+                    });
                 })
                 ->rawColumns(['actions'])
                 ->make(true);

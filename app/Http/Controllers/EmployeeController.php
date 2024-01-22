@@ -27,6 +27,9 @@ class EmployeeController extends Controller
 
     protected function buildQuery()
     {
+        $user = auth()->user();
+        $employee = $user->employee;
+        $roles = $user->roles->pluck('name');
         $table = Employee::getTableName();
         $query = Employee::with(['position', 'site', 'sex'])->select([
             "{$table}.id", "{$table}.site_id", "{$table}.position_id",
@@ -35,6 +38,10 @@ class EmployeeController extends Controller
             "{$table}.weight", "{$table}.hire_at", "{$table}.address",
             "{$table}.is_active"
         ]);
+        if (!$roles->contains(Role::ADMIN)) {
+            $query->where('site_id', $employee->site_id)
+                ->where('position_id', Position::TERAPIS_ID);
+        }
 
         return $query;
     }
@@ -286,6 +293,8 @@ class EmployeeController extends Controller
                 $user->assignRole(Role::TERAPIS);
             } else if ($employee->position_id == Position::ADMIN_ID) {
                 $user->assignRole(Role::ADMIN);
+            } else if ($employee->position_id == Position::ADMIN_CABANG_ID) {
+                $user->assignRole(Role::ADMIN_CABANG);
             }
             return [
                 'notification' => [
@@ -301,11 +310,17 @@ class EmployeeController extends Controller
 
     private function formData()
     {
+        $positions = [];
         $user = auth()->user();
+        if ($user->is_admin) {
+            $positions = Position::active()->orderBy('id', 'desc')->pluck('name', 'id');
+        } else {
+            $positions = Position::active()->where('id', Position::TERAPIS_ID)->orderBy('id', 'desc')->pluck('name', 'id');
+        }
         return [
             'sites' => $user->availableSites()->get()->pluck('city_name', 'id'),
             'sexs' => Reference::byCat(Reference::SEX_CAT_ID)->orderBy('order')->pluck('name', 'id'),
-            'positions' => Position::active()->orderBy('id', 'desc')->pluck('name', 'id'),
+            'positions' => $positions,
         ];
     }
 }

@@ -47,6 +47,10 @@ class User extends Authenticatable
         'password' => 'hashed',
     ];
 
+    public function getIsAdminAttribute() {
+        return $this->roles?->pluck('name')->contains(Role::ADMIN);
+    }
+
     public function getNameAttribute() {
         return $this->employee->name;
     }

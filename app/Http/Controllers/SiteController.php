@@ -7,6 +7,8 @@ use App\Http\Requests\UpdateSiteRequest;
 use App\Http\Requests\StoreSiteRequest;
 use App\Policies\SitePolicy;
 use App\Http\Controllers\Controller;
+use App\Models\Sys\Role;
+use App\Policies\SiteBankPolicy;
 use Illuminate\Http\Request;
 
 
@@ -20,15 +22,24 @@ class SiteController extends Controller
 
     protected function buildQuery()
     {
-      $table = Site::getTableName();
-      return Site::select([
-       "{$table}.id","{$table}.city_code","{$table}.city_name","{$table}.owner_name","{$table}.no_hp","{$table}.address"
-      ]);
+        $user = auth()->user();
+        $employee = $user->employee;
+        $roles = $user->roles->pluck('name');
+        $table = Site::getTableName();
+        $query = Site::select([
+            "{$table}.id", "{$table}.city_code", "{$table}.city_name",
+            "{$table}.owner_name", "{$table}.no_hp", "{$table}.address"
+        ]);
+        if (!$roles->contains(Role::ADMIN)) {
+            $query->where('id', $employee->site_id);
+        }
+
+        return $query;
     }
 
     protected function buildDatatable($query)
     {
-      return datatables($query);
+        return datatables($query);
         // ->addColumn("firstCol", function (Site $record) {
         //   return $record->field;
         // })
@@ -39,9 +50,9 @@ class SiteController extends Controller
 
     public function json()
     {
-      $query = $this->buildQuery()
-        ->limit(20);
-      return $this->buildDatatable($query)->make(true);
+        $query = $this->buildQuery()
+            ->limit(20);
+        return $this->buildDatatable($query)->make(true);
     }
 
     /**
@@ -56,12 +67,14 @@ class SiteController extends Controller
             return $this->buildDatatable($this->buildQuery())
                 ->addColumn('actions', function (Site $record) use ($user) {
                     $actions = [
-                      $user->can(SitePolicy::POLICY_NAME.".view") ? "<a href='" . route("site.show", $record->id) . "' class='btn btn-xs btn-primary modal-remote' title='Show'><i class='fas fa-eye'></i></a>" : '', // show
-                      $user->can(SitePolicy::POLICY_NAME.".update") ? "<a href='" . route("site.edit", $record->id) . "' class='btn btn-xs btn-warning modal-remote' title='Edit'><i class='fas fa-pencil-alt'></i></a>" : '', // edit
-                      $user->can(SitePolicy::POLICY_NAME.".delete") ? "<a data-title='Hapus Master Cabang' data-desc='Yakin ingin menghapus data cabang #" . $record->city_code . " ?' href='" . route("site.destroy", $record->id) . "' class='btn btn-xs btn-danger btn-delete' title='Delete'><i class='fas fa-trash'></i></a>" : '', // delete
+                        $user->can(SitePolicy::POLICY_NAME . ".view") ? "<a href='" . route("site.show", $record->id) . "' class='btn btn-xs btn-primary modal-remote' title='Show'><i class='fas fa-eye'></i></a>" : '', // show
+                        $user->can(SitePolicy::POLICY_NAME . ".update") ? "<a href='" . route("site.edit", $record->id) . "' class='btn btn-xs btn-warning modal-remote' title='Edit'><i class='fas fa-pencil-alt'></i></a>" : '', // edit
+                        $user->can(SitePolicy::POLICY_NAME . ".delete") ? "<a data-title='Hapus Master Cabang' data-desc='Yakin ingin menghapus data cabang #" . $record->city_code . " ?' href='" . route("site.destroy", $record->id) . "' class='btn btn-xs btn-danger btn-delete' title='Delete'><i class='fas fa-trash'></i></a>" : '', // delete
                     ];
                     $extraAction = [];
-                    $extraAction[] = "<a href='" . route("site.site-bank.index", $record->id) . "' class='btn btn-xs btn-secondary' title='Bank'><i class='fas fa-wallet'></i></a>";
+                    if ($user->can(SiteBankPolicy::POLICY_NAME . ".viewAny")) {
+                        $extraAction[] = "<a href='" . route("site.site-bank.index", $record->id) . "' class='btn btn-xs btn-secondary' title='Bank'><i class='fas fa-wallet'></i></a>";
+                    }
 
                     return '<div class="btn-group mx-1">' . implode('', $extraAction) . '</div>' . '<div class="btn-group">' . implode('', $actions) . '</div>';
                 })
@@ -79,18 +92,18 @@ class SiteController extends Controller
      */
     public function create(Request $request)
     {
-      $view = view('site.create', [
-        'record' => null
-      ] + $this->formData());
-      if ($request->ajax()) {
-        return response()->json([
-          'title' => "Tambah Master Cabang",
-          'content' => $view->render(),
-          'footer' => '<button type="submit" class="btn btn-primary">Simpan</button>',
-        ]);
-      } else {
-        return $view;
-      }
+        $view = view('site.create', [
+            'record' => null
+        ] + $this->formData());
+        if ($request->ajax()) {
+            return response()->json([
+                'title' => "Tambah Master Cabang",
+                'content' => $view->render(),
+                'footer' => '<button type="submit" class="btn btn-primary">Simpan</button>',
+            ]);
+        } else {
+            return $view;
+        }
     }
 
     /**
@@ -129,15 +142,15 @@ class SiteController extends Controller
      */
     public function show(Request $request, Site $site)
     {
-      $view = view('site.show', ['record' => $site]);
-      if ($request->ajax()) {
-        return response()->json([
-          'title' => "Lihat Master Cabang",
-          'content' => $view->render(),
-        ]);
-      } else {
-        return $view;
-      }
+        $view = view('site.show', ['record' => $site]);
+        if ($request->ajax()) {
+            return response()->json([
+                'title' => "Lihat Master Cabang",
+                'content' => $view->render(),
+            ]);
+        } else {
+            return $view;
+        }
     }
 
     /**
@@ -148,18 +161,18 @@ class SiteController extends Controller
      */
     public function edit(Request $request, Site $site)
     {
-      $view = view('site.edit', [
-        'record' => $site
-      ] + $this->formData());
-      if ($request->ajax()) {
-        return response()->json([
-          'title' => "Edit Master Cabang",
-          'content' => $view->render(),
-          'footer' => '<button type="submit" class="btn btn-primary">Simpan</button>',
-        ]);
-      } else {
-        return $view;
-      }
+        $view = view('site.edit', [
+            'record' => $site
+        ] + $this->formData());
+        if ($request->ajax()) {
+            return response()->json([
+                'title' => "Edit Master Cabang",
+                'content' => $view->render(),
+                'footer' => '<button type="submit" class="btn btn-primary">Simpan</button>',
+            ]);
+        } else {
+            return $view;
+        }
     }
 
     /**
@@ -213,9 +226,8 @@ class SiteController extends Controller
 
 
 
-    private function formData() {
-        return [
-
-        ];
+    private function formData()
+    {
+        return [];
     }
 }

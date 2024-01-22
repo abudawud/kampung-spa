@@ -82,6 +82,14 @@
                                     <th class="filter">Payment Total</th>
                                     <th></th>
                                 </tr>
+                                <tr class="bg-light">
+                                    <th class="text-center" colspan="6">TOTAL</th>
+                                    <th class="text-right" id="total-price"></th>
+                                    <th class="text-right" id="total-ongkos"></th>
+                                    <th class="text-right" id="total-invoice"></th>
+                                    <th class="text-right" id="total-payment"></th>
+                                    <th></th>
+                                </tr>
                             </tfoot>
                         </table>
                     </div>
@@ -109,7 +117,16 @@
                 dom: dom,
                 processing: true,
                 serverSide: true,
-                ajax: "{{ route('order.index') }}",
+                ajax: {
+                    url: "{{ route('order.index') }}",
+                    dataSrc: function(json) {
+                        $('#total-price').html(json.total.price);
+                        $('#total-ongkos').html(json.total.ongkos);
+                        $('#total-invoice').html(json.total.invoice_total);
+                        $('#total-payment').html(json.total.payment_total);
+                        return json.data;
+                    }
+                },
                 pageLength: 25,
                 colReorder: true,
                 order: [

@@ -9,6 +9,7 @@ use App\Policies\CustomerRegistrationPolicy;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Exports\CustomerRegistrationExport;
+use App\Models\Sys\Role;
 use Maatwebsite\Excel\Facades\Excel;
 use Barryvdh\DomPDF\Facade\Pdf;
 
@@ -22,13 +23,22 @@ class CustomerRegistrationController extends Controller
 
     protected function buildQuery()
     {
+        $user = auth()->user();
+        $employee = $user->employee;
+        $roles = $user->roles->pluck('name');
         $table = CustomerRegistration::getTableName();
-        return CustomerRegistration::select([
+        $query = CustomerRegistration::select([
             "{$table}.id", "{$table}.customer_id", "{$table}.price",
             "{$table}.description", "{$table}.created_at",
         ])->with([
             'customer', 'customer.site',
         ]);
+
+        if (!$roles->contains(Role::ADMIN)) {
+            $query->where('site_id', $employee->site_id);
+        }
+
+        return $query;
     }
 
     protected function buildDatatable($query)

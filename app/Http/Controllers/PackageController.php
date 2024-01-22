@@ -9,8 +9,10 @@ use App\Policies\PackagePolicy;
 use App\Http\Controllers\Controller;
 use App\Models\Customer;
 use App\Models\Site;
+use App\Models\Sys\Role;
+use App\Policies\PackageItemPolicy;
 use Illuminate\Http\Request;
-
+use Illuminate\Support\Facades\Validator;
 
 class PackageController extends Controller
 {
@@ -22,19 +24,26 @@ class PackageController extends Controller
 
     protected function buildQuery()
     {
+        $user = auth()->user();
+        $employee = $user->employee;
+        $roles = $user->roles->pluck('name');
         $table = Package::getTableName();
-        return Package::select([
+        $query = Package::select([
             "{$table}.id", "{$table}.site_id", "{$table}.code",
             "{$table}.name", "{$table}.normal_price", "{$table}.member_price",
             "{$table}.description", "{$table}.launch_at", "{$table}.end_at",
             "{$table}.duration",
         ])->with(['site']);
+        if (!$roles->contains(Role::ADMIN)) {
+            $query->where('site_id', $employee->site_id);
+        }
+        return $query;
     }
 
     protected function buildDatatable($query)
     {
         return datatables($query)
-            ->filterColumn('site_id', function($query, $keyword) {
+            ->filterColumn('site_id', function ($query, $keyword) {
                 $query->where('site_id', $keyword);
             });
         // ->addColumn("firstCol", function (Package $record) {
@@ -80,7 +89,9 @@ class PackageController extends Controller
                     ];
 
                     $extraAction = [];
-                    $extraAction[] = "<a class='btn btn-xs bg-secondary' href='" . route('package.package-item.index', $record) . "'><span class='fas fa-fw fa-cubes'></span></a>";
+                    if ($user->can(PackageItemPolicy::POLICY_NAME . ".viewAny")) {
+                        $extraAction[] = "<a class='btn btn-xs bg-secondary' href='" . route('package.package-item.index', $record) . "'><span class='fas fa-fw fa-cubes'></span></a>";
+                    }
 
                     return '<div class="btn-group mx-1">' . implode('', $extraAction) . '</div>' . '<div class="btn-group">' . implode('', $actions) . '</div>';
                 })
@@ -211,6 +222,42 @@ class PackageController extends Controller
                 'title' => 'Update Master Paket',
                 'message' => 'Berhasil merubah data Master Paket',
             ]);
+        }
+    }
+
+    public function updateHarga(Request $request, Package $package)
+    {
+        $view = view('package.update-harga', [
+            'record' => $package
+        ] + $this->formData());
+        if ($request->ajax()) {
+            if ($request->isMethod('get')) {
+                return response()->json([
+                    'title' => "Update Harga Paket",
+                    'content' => $view->render(),
+                    'footer' => '<button type="submit" class="btn btn-primary">Simpan</button>',
+                ]);
+            } else {
+                $validated = Validator::make($request->all(), [
+                    'normal_price' => 'required|integer|gt:0',
+                    'member_price' => 'required|integer|gt:0',
+                ])->validate();
+                $package->update($validated);
+                return [
+                    'notification' => [
+                        'type' => "success",
+                        'title' => 'Update Harga',
+                        'message' => 'Berhasil merubah harga paket',
+                    ],
+                    'datatableId' => '#datatable-item',
+                    'callback_function' => 'updateHarga',
+                    'callback_data' => $package,
+                    'code' => 200,
+                    'message' => 'Success',
+                ];
+            }
+        } else {
+            return $view;
         }
     }
 

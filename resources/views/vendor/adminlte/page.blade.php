@@ -62,7 +62,7 @@
         });
         $(document).ready(function() {
             toastr.options = {
-                "positionClass": "toast-top-right",
+                "positionClass": "toast-bottom-right",
             }
             if (notification?.type) {
                 toastr[notification.type](notification.message, notification.title);

@@ -13,6 +13,7 @@ class Position extends BaseModel
     use HasFactory;
     const ADMIN_ID = 1;
     const TERAPIS_ID = 2;
+    const ADMIN_CABANG_ID = 3;
 
     // overide default value
     protected $table = "position";

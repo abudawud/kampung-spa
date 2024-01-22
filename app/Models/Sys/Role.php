@@ -11,5 +11,6 @@ class Role extends BaseModel
     use HasFactory;
 
     const ADMIN = "Admin";
+    const ADMIN_CABANG = "Admin Cabang";
     const TERAPIS = "Terapis";
 }

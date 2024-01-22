@@ -10,12 +10,14 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use App\Exports\OrderExport;
+use App\Helpers\Currency;
 use App\Models\Customer;
 use App\Models\Reference;
 use App\Models\Site;
 use App\Models\SiteBank;
 use App\Models\Sys\Role;
 use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
@@ -110,6 +112,26 @@ class OrderController extends Controller
                 })
                 ->editColumn('payment_total', function ($record) {
                     return number_format($record->payment_total);
+                })
+                ->withQuery('total', function($query) {
+                    $query->limit = null;
+                    $query->offset = null;
+                    $data = $query->select([
+                        DB::raw('sum(price) as price'),
+                        DB::raw('sum(transport + ex_night) as ongkos'),
+                        DB::raw('sum(invoice_total) as invoice_total'),
+                        DB::raw('sum(payment_total) as payment_total'),
+                    ])->first();
+                    $data = [
+                        'price' => $data->price,
+                        'ongkos' => $data->ongkos,
+                        'invoice_total' => $data->invoice_total,
+                        'payment_total' => $data->payment_total,
+                    ];
+
+                    return Arr::map($data, function ($value, $key) {
+                        return Currency::format($value);
+                    });
                 })
                 ->rawColumns(['actions'])
                 ->make(true);

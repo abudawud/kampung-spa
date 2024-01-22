@@ -23,13 +23,21 @@ class ItemController extends Controller
 
     protected function buildQuery()
     {
+        $user = auth()->user();
+        $employee = $user->employee;
+        $roles = $user->roles->pluck('name');
         $table = Item::getTableName();
-        return Item::with('site')
+        $query = Item::with('site')
             ->select([
                 "{$table}.id", "{$table}.site_id", "{$table}.code",
                 "{$table}.name", "{$table}.duration", "{$table}.normal_price",
                 "{$table}.member_price", "{$table}.description", "{$table}.is_active"
             ]);
+        if (!$roles->contains(Role::ADMIN)) {
+            $query->where('site_id', $employee->site_id);
+        }
+
+        return $query;
     }
 
     protected function buildDatatable($query)

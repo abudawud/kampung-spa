@@ -39,7 +39,7 @@ class Order extends BaseModel
     ];
 
     public $casts = [
-        'order_date' => 'date',
+        'order_date' => 'date:Y-m-d',
     ];
 
     const VALIDATION_RULES = [

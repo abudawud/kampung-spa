@@ -34,7 +34,7 @@ class Employee extends BaseModel
     const VALIDATION_RULES = [
         'position_id' => 'required',
         'name' => 'required',
-        'email' => 'required|unique:'.self::class.',email',
+        'email' => 'required|unique:'.self::class.',email|email:rfc',
         'no_hp' => 'required',
         'sex_id' => 'required',
         'dob' => 'required|date:Y-m-d',

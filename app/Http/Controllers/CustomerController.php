@@ -8,6 +8,7 @@ use App\Http\Requests\StoreCustomerRequest;
 use App\Policies\CustomerPolicy;
 use App\Http\Controllers\Controller;
 use App\Models\Site;
+use App\Models\Sys\Role;
 use Illuminate\Http\Request;
 
 class CustomerController extends Controller
@@ -20,6 +21,9 @@ class CustomerController extends Controller
 
     protected function buildQuery()
     {
+        $user = auth()->user();
+        $employee = $user->employee;
+        $roles = $user->roles->pluck('name');
         $table = Customer::getTableName();
         $query = Customer::with('site')
             ->select([
@@ -28,6 +32,9 @@ class CustomerController extends Controller
                 "{$table}.no_hp", "{$table}.address", "{$table}.is_member"
             ]);
 
+        if (!$roles->contains(Role::ADMIN)) {
+            $query->where('site_id', $employee->site_id);
+        }
         return $query;
     }
 
