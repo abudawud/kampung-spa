@@ -58,6 +58,9 @@ class Reference extends BaseModel
 
     const BANK_TYPE_CID = 3;
 
+    const MEMBER_STATUS_ACTIVE_ID = 11;
+    const MEMBER_STATUS_EXPIRED_ID = 12;
+
     public function scopeByCat($query, $catId)
     {
         return $query->where([

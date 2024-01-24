@@ -4,6 +4,8 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use AbuDawud\AlCrudLaravel\Models\BaseModel;
+use Carbon\CarbonInterval;
+use Illuminate\Support\Carbon;
 
 /**
  * @property-read int $id
@@ -70,9 +72,22 @@ class Customer extends BaseModel
         return $this->belongsTo(Site::class, 'site_id');
     }
 
+    public function memberStatus() {
+        return $this->belongsTo(Reference::class, 'member_status_id');
+    }
+
     public function getMemberTextAttribute()
     {
         return $this->is_member == 1 ? 'Member' : 'Non-Member';
+    }
+
+    public function getMemberCountDownAttribute()
+    {
+        $now = now();
+        $expAt = Carbon::parse($this->member_at)->addYear();
+        $diff = $expAt->diffInDays($now);
+
+        return CarbonInterval::days($diff)->cascade()->forHumans();
     }
 
     public function getMemberIconAttribute()
